@@ -1,0 +1,6 @@
+{
+  "name": "WoodBit ERP — Organic Tech",
+  "description": "ERP para Marcenaria e Fabricação Digital (CNC + Impressão 3D) com IA Local-First, PCP Multi-Centro, Orçamentos e CRM",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

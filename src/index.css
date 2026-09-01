@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-surface: #120e0d;
+    --bg-lowest: #0c0908;
+    --bg-low: #181412;
+    --bg-container: #211c1a;
+    --bg-high: #2b2523;
+    --bg-highest: #38312e;
+    --bg-bright: #443c38;
+    --text-main: #f0e8e3;
+    --text-muted: #cdbeb2;
+    --text-faint: #928377;
+    --border-outline: #8c7c70;
+    --border-subtle: #41372f;
+    --border-card: rgba(254, 204, 147, 0.12);
+    --color-primary: #fecc93;
+    --color-primary-hover: #ffd9ad;
+    --color-primary-container: #472b05;
+    --text-on-primary: #2d1800;
+    --color-secondary: #9cd499;
+    --color-secondary-container: #1b4721;
+    --color-tertiary: #ffcb9c;
+    --color-error: #ffb4ab;
+    --color-error-container: #680007;
+    font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .light {
+    --bg-surface: #faf6f0;
+    --bg-lowest: #ffffff;
+    --bg-low: #f4ede3;
+    --bg-container: #eee5d8;
+    --bg-high: #e5dacf;
+    --bg-highest: #dcd0c3;
+    --bg-bright: #d4c6b7;
+    --text-main: #241a12;
+    --text-muted: #5e4c3e;
+    --text-faint: #8a786a;
+    --border-outline: #9e8979;
+    --border-subtle: #d6c6b4;
+    --border-card: rgba(140, 90, 31, 0.15);
+    --color-primary: #94591a;
+    --color-primary-hover: #7b4610;
+    --color-primary-container: #fedfb9;
+    --text-on-primary: #ffffff;
+    --color-secondary: #2f6d2f;
+    --color-secondary-container: #c4f3be;
+    --color-tertiary: #92531e;
+    --color-error: #ba1a1a;
+    --color-error-container: #ffdad6;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* WoodBit Dynamic Theme Surfaces */
+.theme-surface {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.theme-card {
+  background-color: var(--bg-container);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.theme-card-subtle {
+  background-color: var(--bg-low);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.theme-input {
+  background-color: var(--bg-lowest);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.theme-input:focus {
+  border-color: var(--color-primary);
+}
+
+/* WoodBit Visual Signatures */
+.wood-grain {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(254, 204, 147, 0.018),
+    rgba(254, 204, 147, 0.018) 2px,
+    transparent 2px,
+    transparent 9px
+  );
+}
+
+.light .wood-grain {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(148, 89, 26, 0.02),
+    rgba(148, 89, 26, 0.02) 2px,
+    transparent 2px,
+    transparent 9px
+  );
+}
+
+.debossed {
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(79, 69, 58, 0.25);
+}
+
+.light .debossed {
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(214, 198, 180, 0.6);
+}
+
+.embossed {
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(254, 204, 147, 0.1);
+}
+
+.light .embossed {
+  box-shadow: 0 4px 14px -2px rgba(90, 70, 50, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+}
+
+.beveled-card {
+  box-shadow: inset 0 1px 0 0 rgba(254, 204, 147, 0.1), 0 4px 18px -2px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+}
+
+.light .beveled-card {
+  box-shadow: 0 2px 10px -1px rgba(90, 70, 50, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--border-subtle);
+}
+
+.convex-btn {
+  background: linear-gradient(180deg, #e3b37c 0%, #c49257 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 2px 5px rgba(0, 0, 0, 0.3);
+  color: #2e1802;
+  font-weight: 600;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.convex-btn:hover {
+  background: linear-gradient(180deg, #ebd2a4 0%, #d19f65 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 8px rgba(0, 0, 0, 0.35);
+  transform: translateY(-0.5px);
+}
+
+.convex-btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.light .convex-btn {
+  background: linear-gradient(180deg, #b0702a 0%, #8c5218 100%);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 2px 5px rgba(100, 60, 20, 0.25);
+}
+
+.light .convex-btn:hover {
+  background: linear-gradient(180deg, #bf7c32 0%, #9e5d1e 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 3px 8px rgba(100, 60, 20, 0.3);
+}
+
+/* Precision Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-lowest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-highest);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-outline);
+}
+
