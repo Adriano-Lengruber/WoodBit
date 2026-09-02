@@ -290,15 +290,15 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
   return (
     <div id="cut-optimizer-view" className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-[#231f1d] border border-[#4f453a]/40 p-4 rounded-xl beveled-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-xl beveled-card flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <Scissors className="w-5 h-5 text-[#fecc93]" />
-            <h2 className="font-display font-bold text-base text-[#eae1dd]">
+            <Scissors className="w-5 h-5 text-[var(--color-primary)]" />
+            <h2 className="font-display font-bold text-base text-[var(--text-main)]">
               Plano de Corte & Otimizador Nesting CNC / Esquadrejadeira
             </h2>
           </div>
-          <p className="text-xs text-[#d3c4b6]">
+          <p className="text-xs text-[var(--text-muted)]">
             Algoritmo inteligente de aproveitamento de chapas com controle de veio, refilo e fita de borda nos 4 lados.
           </p>
         </div>
@@ -307,7 +307,7 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
           {onBackToProduction && (
             <button
               onClick={onBackToProduction}
-              className="px-3 py-1.5 rounded-lg bg-[#2e2927] hover:bg-[#393431] text-[#d3c4b6] text-xs font-medium cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-muted)] text-xs font-medium cursor-pointer border border-[var(--border-subtle)]"
             >
               ← Voltar ao PCP
             </button>
@@ -315,7 +315,7 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
 
           <button
             onClick={() => setShowLabelsModal(true)}
-            className="convex-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md"
+            className="convex-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Printer className="w-3.5 h-3.5" />
             Imprimir Etiquetas Térmicas (60x40)
@@ -325,61 +325,61 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
 
       {/* Sheet Parameters & Metrics Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-3.5 beveled-card">
-          <span className="text-[10px] text-[#9c8e82] uppercase tracking-wider block">Dimensões da Chapa</span>
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card">
+          <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider block font-mono">Dimensões da Chapa</span>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="font-mono font-bold text-sm text-[#fecc93]">{sheetWidth} × {sheetHeight}</span>
-            <span className="text-[10px] text-[#9c8e82]">mm</span>
+            <span className="font-mono font-bold text-sm text-[var(--color-primary)]">{sheetWidth} × {sheetHeight}</span>
+            <span className="text-[10px] text-[var(--text-faint)] font-mono">mm</span>
           </div>
-          <span className="text-[10px] text-[#d3c4b6]/70 block mt-1">Área: {totalSheetArea.toFixed(2)} m²</span>
+          <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-mono">Área: {totalSheetArea.toFixed(2)} m²</span>
         </div>
 
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-3.5 beveled-card">
-          <span className="text-[10px] text-[#9c8e82] uppercase tracking-wider block">Aproveitamento / Eficiência</span>
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card">
+          <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider block font-mono">Eficiência Nesting</span>
           <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="font-mono font-bold text-lg text-[#9cd499]">{efficiencyPercent.toFixed(1)}%</span>
-            <span className="text-[10px] text-[#9c8e82]">({wastePercent}% sobra)</span>
+            <span className="font-mono font-bold text-lg text-[var(--color-secondary)]">{efficiencyPercent.toFixed(1)}%</span>
+            <span className="text-[10px] text-[var(--text-faint)] font-mono">({wastePercent}% sobra)</span>
           </div>
-          <span className="text-[10px] text-[#9cd499] block mt-1">Aproveitamento Alto ✓</span>
+          <span className="text-[10px] text-[var(--color-secondary)] block mt-1 font-medium">Aproveitamento Alto ✓</span>
         </div>
 
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-3.5 beveled-card">
-          <span className="text-[10px] text-[#9c8e82] uppercase tracking-wider block">Total de Peças</span>
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card">
+          <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider block font-mono">Total de Peças</span>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="font-mono font-bold text-lg text-[#eae1dd]">
+            <span className="font-mono font-bold text-lg text-[var(--text-main)]">
               {pieces.reduce((acc, p) => acc + p.quantity, 0)}
             </span>
-            <span className="text-[10px] text-[#9c8e82]">peças cadastradas</span>
+            <span className="text-[10px] text-[var(--text-faint)]">peças</span>
           </div>
-          <span className="text-[10px] text-[#d3c4b6]/70 block mt-1">1 chapa necessária</span>
+          <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-mono">1 chapa necessária</span>
         </div>
 
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-3.5 beveled-card">
-          <span className="text-[10px] text-[#9c8e82] uppercase tracking-wider block">Fita de Borda Total</span>
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card">
+          <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider block font-mono">Fita de Borda Total</span>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="font-mono font-bold text-lg text-[#fecc93]">{totalLinearEdgeBanding.toFixed(1)}</span>
-            <span className="text-[10px] text-[#9c8e82]">metros lineares</span>
+            <span className="font-mono font-bold text-lg text-[var(--color-primary)]">{totalLinearEdgeBanding.toFixed(1)}</span>
+            <span className="text-[10px] text-[var(--text-faint)] font-mono">m linear</span>
           </div>
-          <span className="text-[10px] text-[#d3c4b6]/70 block mt-1">Freijó 1mm / 22mm</span>
+          <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-mono">Freijó 1mm / 22mm</span>
         </div>
 
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-3.5 beveled-card">
-          <span className="text-[10px] text-[#9c8e82] uppercase tracking-wider block">Parâmetros de Corte</span>
-          <div className="text-[11px] font-mono text-[#d3c4b6] mt-1 space-y-0.5">
-            <div>Fresa/Serra: <strong className="text-[#fecc93]">{sawKerf}mm</strong></div>
-            <div>Refilo: <strong className="text-[#fecc93]">{trimBorder}mm</strong></div>
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card">
+          <span className="text-[10px] text-[var(--text-faint)] uppercase tracking-wider block font-mono">Parâmetros de Corte</span>
+          <div className="text-[11px] font-mono text-[var(--text-muted)] mt-1 space-y-0.5">
+            <div>Fresa/Serra: <strong className="text-[var(--color-primary)]">{sawKerf}mm</strong></div>
+            <div>Refilo: <strong className="text-[var(--color-primary)]">{trimBorder}mm</strong></div>
           </div>
         </div>
       </div>
 
       {/* Main Tabs Navigation */}
-      <div className="flex border-b border-[#4f453a]/40 bg-[#161311] px-4 pt-2 gap-2 text-xs rounded-t-xl">
+      <div className="flex border-b border-[var(--border-subtle)] bg-[var(--bg-lowest)] px-4 pt-2 gap-2 text-xs rounded-t-xl">
         <button
           onClick={() => setActiveTab('diagram')}
           className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'diagram'
-              ? 'border-[#fecc93] text-[#fecc93]'
-              : 'border-transparent text-[#9c8e82] hover:text-[#d3c4b6]'
+              ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+              : 'border-transparent text-[var(--text-faint)] hover:text-[var(--text-main)]'
           }`}
         >
           <Layers className="w-3.5 h-3.5" /> Diagrama Visual 2D (Chapa 1/1)
@@ -389,8 +389,8 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
           onClick={() => setActiveTab('pieces')}
           className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 cursor-pointer ${
             activeTab === 'pieces'
-              ? 'border-[#fecc93] text-[#fecc93]'
-              : 'border-transparent text-[#9c8e82] hover:text-[#d3c4b6]'
+              ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+              : 'border-transparent text-[var(--text-faint)] hover:text-[var(--text-main)]'
           }`}
         >
           <Scissors className="w-3.5 h-3.5" /> Lista de Peças & Fita ({pieces.length})
@@ -399,34 +399,34 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
 
       {/* TAB 1: VISUAL 2D DIAGRAM */}
       {activeTab === 'diagram' && (
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-b-xl p-5 beveled-card space-y-4">
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-b-xl p-5 beveled-card space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-[#fecc93] font-bold">Chapa #01:</span>
-              <span className="text-xs text-[#eae1dd] font-semibold">{selectedMaterial}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1d5123] text-[#9cd499] font-mono">
+              <span className="font-mono text-xs text-[var(--color-primary)] font-bold">Chapa #01:</span>
+              <span className="text-xs text-[var(--text-main)] font-semibold">{selectedMaterial}</span>
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-[var(--color-secondary-container)] text-[var(--color-secondary)] font-mono font-bold">
                 88.7% Ocupado
               </span>
             </div>
 
             <div className="flex items-center gap-2 text-[11px]">
-              <span className="flex items-center gap-1 text-[#d3c4b6]">
-                <span className="w-2.5 h-2.5 rounded-xs bg-[#c4945d] border border-[#fecc93]/40"></span> Peça Cortada
+              <span className="flex items-center gap-1 text-[var(--text-muted)]">
+                <span className="w-2.5 h-2.5 rounded-xs bg-[#c4945d] border border-[var(--color-primary)]/40"></span> Peça Cortada
               </span>
-              <span className="flex items-center gap-1 text-[#d3c4b6]">
-                <span className="w-2.5 h-2.5 rounded-xs bg-[#110d0c] border border-dashed border-[#4f453a]"></span> Retalho / Sobra
+              <span className="flex items-center gap-1 text-[var(--text-muted)]">
+                <span className="w-2.5 h-2.5 rounded-xs bg-[var(--bg-lowest)] border border-dashed border-[var(--border-subtle)]"></span> Retalho / Sobra
               </span>
-              <span className="flex items-center gap-1 text-[#d3c4b6]">
-                <span className="w-2.5 h-1 bg-[#fecc93]"></span> Fita de Borda
+              <span className="flex items-center gap-1 text-[var(--text-muted)]">
+                <span className="w-2.5 h-1 bg-[var(--color-primary)]"></span> Fita de Borda
               </span>
             </div>
           </div>
 
           {/* Interactive SVG Diagram Canvas */}
-          <div className="bg-[#110d0c] p-4 rounded-xl border border-[#4f453a]/60 overflow-x-auto debossed">
+          <div className="bg-[var(--bg-lowest)] p-4 rounded-xl border border-[var(--border-subtle)] overflow-x-auto debossed">
             <svg
               viewBox={`0 0 ${sheetWidth} ${sheetHeight}`}
-              className="w-full h-auto max-h-[460px] select-none rounded bg-[#161311] border border-[#4f453a]/40 shadow-inner"
+              className="w-full h-auto max-h-[460px] select-none rounded bg-[#161311] border border-[var(--border-subtle)] shadow-inner"
               style={{ minWidth: '600px' }}
             >
               {/* Outer Sheet Border & Trim */}
@@ -557,21 +557,21 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
 
           {/* Action Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div className="flex items-center gap-2 text-xs text-[#d3c4b6]">
-              <Info className="w-4 h-4 text-[#fecc93]" />
+            <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <Info className="w-4 h-4 text-[var(--color-primary)]" />
               <span>Sequência de corte otimizada para serra esquadrejadeira e CNC Router com troca de fresa única.</span>
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportDXF}
-                className="px-3 py-1.5 rounded-lg bg-[#2e2927] hover:bg-[#393431] text-[#eae1dd] text-xs font-semibold flex items-center gap-1.5 cursor-pointer border border-[#4f453a]/40"
+                className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-main)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer border border-[var(--border-subtle)]"
               >
-                <Download className="w-3.5 h-3.5 text-[#fecc93]" /> Exportar DXF
+                <Download className="w-3.5 h-3.5 text-[var(--color-primary)]" /> Exportar DXF
               </button>
               <button
                 onClick={handleExportGCode}
-                className="convex-btn px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow"
+                className="convex-btn px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <FileCode className="w-3.5 h-3.5" /> Gerar G-Code (.tap)
               </button>
@@ -582,54 +582,54 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
 
       {/* TAB 2: PIECES LIST & EDGE BANDING */}
       {activeTab === 'pieces' && (
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-b-xl p-5 beveled-card space-y-5">
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-b-xl p-5 beveled-card space-y-5">
           {/* Add Piece Form */}
-          <form onSubmit={handleAddPiece} className="p-4 rounded-xl bg-[#161311] border border-[#4f453a]/40 space-y-3 debossed">
-            <h4 className="font-display font-bold text-xs text-[#eae1dd] flex items-center gap-2">
-              <Plus className="w-4 h-4 text-[#fecc93]" /> Adicionar Peça ao Plano de Corte
+          <form onSubmit={handleAddPiece} className="p-4 rounded-xl bg-[var(--bg-lowest)] border border-[var(--border-subtle)] space-y-3 debossed">
+            <h4 className="font-display font-bold text-xs text-[var(--text-main)] flex items-center gap-2">
+              <Plus className="w-4 h-4 text-[var(--color-primary)]" /> Adicionar Peça ao Plano de Corte
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
               <div className="sm:col-span-2">
-                <label className="text-[10px] text-[#9c8e82] block mb-1">Descrição da Peça</label>
+                <label className="text-[10px] text-[var(--text-faint)] block mb-1">Descrição da Peça</label>
                 <input
                   required
                   type="text"
                   placeholder="Ex: Painel Frontal Gaveta"
                   value={newPieceName}
                   onChange={(e) => setNewPieceName(e.target.value)}
-                  className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg p-2 text-xs text-[#eae1dd] focus:border-[#fecc93]"
+                  className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2 text-xs text-[var(--text-main)] focus:border-[var(--color-primary)]"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] text-[#9c8e82] block mb-1">Largura × Altura (mm)</label>
+                <label className="text-[10px] text-[var(--text-faint)] block mb-1">Largura × Altura (mm)</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
                     value={newWidth}
                     onChange={(e) => setNewWidth(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg p-2 text-xs text-[#eae1dd]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2 text-xs text-[var(--text-main)]"
                   />
-                  <span className="text-[#9c8e82]">×</span>
+                  <span className="text-[var(--text-faint)]">×</span>
                   <input
                     type="number"
                     value={newHeight}
                     onChange={(e) => setNewHeight(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg p-2 text-xs text-[#eae1dd]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2 text-xs text-[var(--text-main)]"
                   />
                 </div>
               </div>
 
               <div className="flex items-end gap-2">
                 <div className="w-20">
-                  <label className="text-[10px] text-[#9c8e82] block mb-1">Qtd</label>
+                  <label className="text-[10px] text-[var(--text-faint)] block mb-1">Qtd</label>
                   <input
                     type="number"
                     min="1"
                     value={newQty}
                     onChange={(e) => setNewQty(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg p-2 text-xs text-[#eae1dd]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2 text-xs text-[var(--text-main)]"
                   />
                 </div>
                 <button
@@ -643,9 +643,9 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
           </form>
 
           {/* Pieces Table */}
-          <div className="overflow-x-auto rounded-lg border border-[#4f453a]/40">
+          <div className="overflow-x-auto rounded-lg border border-[var(--border-subtle)]">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#1f1b19] text-[#9c8e82] uppercase text-[10px] border-b border-[#4f453a]/40">
+              <thead className="bg-[var(--bg-low)] text-[var(--text-faint)] uppercase text-[10px] border-b border-[var(--border-subtle)]">
                 <tr>
                   <th className="p-3">Identificação da Peça</th>
                   <th className="p-3">Dimensões (L × A)</th>
@@ -655,36 +655,36 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
                   <th className="p-3 text-right">Ação</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#4f453a]/20 bg-[#161311]">
+              <tbody className="divide-y divide-[var(--border-subtle)] bg-[var(--bg-container)]">
                 {pieces.map((piece) => (
-                  <tr key={piece.id} className="hover:bg-[#1f1b19]/60">
-                    <td className="p-3 font-semibold text-[#eae1dd]">
+                  <tr key={piece.id} className="hover:bg-[var(--bg-low)]">
+                    <td className="p-3 font-semibold text-[var(--text-main)]">
                       {piece.name}
-                      <span className="text-[10px] text-[#9c8e82] block">{piece.material}</span>
+                      <span className="text-[10px] text-[var(--text-faint)] block">{piece.material}</span>
                     </td>
-                    <td className="p-3 font-mono text-[#fecc93]">
+                    <td className="p-3 font-mono text-[var(--color-primary)] font-bold">
                       {piece.width} × {piece.height} mm
                     </td>
-                    <td className="p-3 font-mono font-bold text-[#eae1dd]">
+                    <td className="p-3 font-mono font-bold text-[var(--text-main)]">
                       {piece.quantity}x
                     </td>
                     <td className="p-3">
-                      <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#231f1d] text-[#d3c4b6] border border-[#4f453a]/30">
+                      <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[var(--bg-low)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
                         {piece.grain === 'vertical' ? '↕ Vertical' : piece.grain === 'horizontal' ? '↔ Horizontal' : 'Livre'}
                       </span>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1.5 text-[10px] font-mono">
-                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.top ? 'bg-[#644316] text-[#fecc93]' : 'bg-[#1f1b19] text-[#4f453a]'}`}>T</span>
-                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.bottom ? 'bg-[#644316] text-[#fecc93]' : 'bg-[#1f1b19] text-[#4f453a]'}`}>B</span>
-                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.left ? 'bg-[#644316] text-[#fecc93]' : 'bg-[#1f1b19] text-[#4f453a]'}`}>E</span>
-                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.right ? 'bg-[#644316] text-[#fecc93]' : 'bg-[#1f1b19] text-[#4f453a]'}`}>D</span>
+                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.top ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]' : 'bg-[var(--bg-low)] text-[var(--text-faint)]'}`}>T</span>
+                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.bottom ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]' : 'bg-[var(--bg-low)] text-[var(--text-faint)]'}`}>B</span>
+                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.left ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]' : 'bg-[var(--bg-low)] text-[var(--text-faint)]'}`}>E</span>
+                        <span className={`px-1.5 py-0.5 rounded ${piece.edgeBanding.right ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)]' : 'bg-[var(--bg-low)] text-[var(--text-faint)]'}`}>D</span>
                       </div>
                     </td>
                     <td className="p-3 text-right">
                       <button
                         onClick={() => handleRemovePiece(piece.id)}
-                        className="text-[#9c8e82] hover:text-[#ffb4ab] p-1 cursor-pointer"
+                        className="text-[var(--text-faint)] hover:text-[var(--color-error)] p-1 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -700,21 +700,21 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
       {/* MODAL: THERMAL LABELS SIMULATOR (60x40mm) */}
       {showLabelsModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[#231f1d] border border-[#fecc93]/40 rounded-xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#4f453a]/40">
+          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
               <div>
-                <h3 className="font-display font-bold text-sm text-[#eae1dd] flex items-center gap-2">
-                  <Printer className="w-4 h-4 text-[#fecc93]" />
+                <h3 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
+                  <Printer className="w-4 h-4 text-[var(--color-primary)]" />
                   Etiquetas Térmicas de Fábrica (Padrão 60 × 40 mm)
                 </h3>
-                <p className="text-[11px] text-[#d3c4b6]">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   Prontas para impressão em rolo térmico para etiquetagem imediata pós-corte CNC.
                 </p>
               </div>
 
               <button
                 onClick={() => setShowLabelsModal(false)}
-                className="text-[#9c8e82] hover:text-[#eae1dd] text-sm"
+                className="text-[var(--text-faint)] hover:text-[var(--text-main)] text-sm cursor-pointer"
               >
                 ✕
               </button>
@@ -759,13 +759,13 @@ export const CutOptimizerView: React.FC<CutOptimizerViewProps> = ({
               ))}
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-[#4f453a]/40">
-              <span className="text-[11px] text-[#9c8e82]">
+            <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)]">
+              <span className="text-[11px] text-[var(--text-faint)] font-mono">
                 Total de 10 etiquetas geradas para este lote
               </span>
               <button
                 onClick={handlePrintLabels}
-                className="convex-btn px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow"
+                className="convex-btn px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs"
               >
                 <Printer className="w-4 h-4" /> Enviar para Impressora Térmica
               </button>

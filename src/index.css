@@ -2,59 +2,64 @@
 
 @layer base {
   :root {
-    --bg-surface: #120e0d;
-    --bg-lowest: #0c0908;
-    --bg-low: #181412;
-    --bg-container: #211c1a;
-    --bg-high: #2b2523;
-    --bg-highest: #38312e;
-    --bg-bright: #443c38;
-    --text-main: #f0e8e3;
-    --text-muted: #cdbeb2;
-    --text-faint: #928377;
-    --border-outline: #8c7c70;
-    --border-subtle: #41372f;
-    --border-card: rgba(254, 204, 147, 0.12);
-    --color-primary: #fecc93;
-    --color-primary-hover: #ffd9ad;
-    --color-primary-container: #472b05;
-    --text-on-primary: #2d1800;
-    --color-secondary: #9cd499;
-    --color-secondary-container: #1b4721;
-    --color-tertiary: #ffcb9c;
-    --color-error: #ffb4ab;
-    --color-error-container: #680007;
-    font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --bg-surface: #0e0c0b;
+    --bg-lowest: #080706;
+    --bg-low: #14110f;
+    --bg-container: #1b1715;
+    --bg-high: #24201d;
+    --bg-highest: #302a27;
+    --bg-bright: #3d3531;
+    --text-main: #f5eeea;
+    --text-muted: #c4b5aa;
+    --text-faint: #8a7b70;
+    --border-outline: #6e6054;
+    --border-subtle: #2f2722;
+    --border-card: rgba(245, 194, 127, 0.12);
+    --color-primary: #f5c27f;
+    --color-primary-hover: #ffd8a0;
+    --color-primary-container: #3d2404;
+    --text-on-primary: #241400;
+    --color-secondary: #7dd396;
+    --color-secondary-container: #14381b;
+    --color-tertiary: #f0ad73;
+    --color-error: #fca5a5;
+    --color-error-container: #5c1414;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
 
   .light {
-    --bg-surface: #faf6f0;
+    --bg-surface: #fbf8f4;
     --bg-lowest: #ffffff;
-    --bg-low: #f4ede3;
-    --bg-container: #eee5d8;
-    --bg-high: #e5dacf;
-    --bg-highest: #dcd0c3;
-    --bg-bright: #d4c6b7;
-    --text-main: #241a12;
-    --text-muted: #5e4c3e;
-    --text-faint: #8a786a;
+    --bg-low: #f4ede4;
+    --bg-container: #ebe1d4;
+    --bg-high: #e0d4c5;
+    --bg-highest: #d5c6b5;
+    --bg-bright: #caa38a;
+    --text-main: #1f1712;
+    --text-muted: #574639;
+    --text-faint: #857365;
     --border-outline: #9e8979;
-    --border-subtle: #d6c6b4;
-    --border-card: rgba(140, 90, 31, 0.15);
+    --border-subtle: #dbcbba;
+    --border-card: rgba(148, 89, 26, 0.14);
     --color-primary: #94591a;
     --color-primary-hover: #7b4610;
-    --color-primary-container: #fedfb9;
+    --color-primary-container: #fde2be;
     --text-on-primary: #ffffff;
-    --color-secondary: #2f6d2f;
-    --color-secondary-container: #c4f3be;
-    --color-tertiary: #92531e;
-    --color-error: #ba1a1a;
-    --color-error-container: #ffdad6;
+    --color-secondary: #246824;
+    --color-secondary-container: #bbf0b5;
+    --color-tertiary: #8f4f1a;
+    --color-error: #b91c1c;
+    --color-error-container: #fed7d7;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  .font-mono, code, pre, .font-telemetry {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
@@ -84,96 +89,128 @@
 
 .theme-input:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(245, 194, 127, 0.15);
 }
 
 /* WoodBit Visual Signatures */
 .wood-grain {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(254, 204, 147, 0.018),
-    rgba(254, 204, 147, 0.018) 2px,
-    transparent 2px,
-    transparent 9px
-  );
+  background-image: radial-gradient(circle at 50% 0%, rgba(245, 194, 127, 0.035) 0%, transparent 75%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(245, 194, 127, 0.012),
+      rgba(245, 194, 127, 0.012) 1px,
+      transparent 1px,
+      transparent 8px
+    );
 }
 
 .light .wood-grain {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(148, 89, 26, 0.02),
-    rgba(148, 89, 26, 0.02) 2px,
-    transparent 2px,
-    transparent 9px
-  );
+  background-image: radial-gradient(circle at 50% 0%, rgba(148, 89, 26, 0.03) 0%, transparent 75%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(148, 89, 26, 0.015),
+      rgba(148, 89, 26, 0.015) 1px,
+      transparent 1px,
+      transparent 8px
+    );
 }
 
 .debossed {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(79, 69, 58, 0.25);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .light .debossed {
-  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(214, 198, 180, 0.6);
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
 }
 
 .embossed {
-  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(254, 204, 147, 0.1);
+  box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
 }
 
 .light .embossed {
-  box-shadow: 0 4px 14px -2px rgba(90, 70, 50, 0.08), 0 1px 3px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 24px -4px rgba(70, 50, 30, 0.08), 0 2px 6px -1px rgba(70, 50, 30, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
 }
 
 .beveled-card {
-  box-shadow: inset 0 1px 0 0 rgba(254, 204, 147, 0.1), 0 4px 18px -2px rgba(0, 0, 0, 0.35);
+  background-color: var(--bg-container);
   border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.beveled-card:hover {
+  border-color: rgba(245, 194, 127, 0.25);
 }
 
 .light .beveled-card {
-  box-shadow: 0 2px 10px -1px rgba(90, 70, 50, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+  box-shadow: 0 3px 12px -2px rgba(80, 60, 40, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
   border: 1px solid var(--border-subtle);
 }
 
 .convex-btn {
-  background: linear-gradient(180deg, #e3b37c 0%, #c49257 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 2px 5px rgba(0, 0, 0, 0.3);
-  color: #2e1802;
-  font-weight: 600;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(180deg, #e8b26e 0%, #cf934b 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 10px rgba(0, 0, 0, 0.35);
+  color: #1a0e02;
+  font-weight: 700;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .convex-btn:hover {
-  background: linear-gradient(180deg, #ebd2a4 0%, #d19f65 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 8px rgba(0, 0, 0, 0.35);
-  transform: translateY(-0.5px);
+  background: linear-gradient(180deg, #f3c285 0%, #dc9e56 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 5px 14px rgba(232, 178, 110, 0.25);
+  transform: translateY(-1px);
 }
 
 .convex-btn:active {
   transform: translateY(1px);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .light .convex-btn {
-  background: linear-gradient(180deg, #b0702a 0%, #8c5218 100%);
+  background: linear-gradient(180deg, #a6621a 0%, #85480f 100%);
   color: #ffffff;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 2px 5px rgba(100, 60, 20, 0.25);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 3px 8px rgba(100, 60, 20, 0.2);
 }
 
 .light .convex-btn:hover {
-  background: linear-gradient(180deg, #bf7c32 0%, #9e5d1e 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 3px 8px rgba(100, 60, 20, 0.3);
+  background: linear-gradient(180deg, #b66f21 0%, #945314 100%);
+}
+
+/* Glassmorphism Acrylic HUD */
+.hud-panel {
+  background: rgba(22, 18, 16, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.light .hud-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Glow Pill & Status Dots */
+.pulse-glow-amber {
+  box-shadow: 0 0 12px 1px rgba(245, 194, 127, 0.35);
+}
+
+.pulse-glow-emerald {
+  box-shadow: 0 0 12px 1px rgba(110, 231, 183, 0.35);
 }
 
 /* Precision Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-lowest);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--bg-highest);
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-outline);

@@ -201,39 +201,39 @@ export const AuditView: React.FC<AuditViewProps> = ({ auditLogs }) => {
   return (
     <div id="audit-view-container" className="space-y-6 max-w-5xl mx-auto">
       {/* Top Header Card */}
-      <div className="bg-[#231f1d] border border-[#4f453a]/40 p-4 rounded-xl beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-xl beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display font-bold text-base text-[#eae1dd] flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-[#fecc93]" />
+          <h2 className="font-display font-bold text-base text-[var(--text-main)] flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-[var(--color-primary)]" />
             Auditoria, Diagnóstico & Testes do Sistema
           </h2>
-          <p className="text-xs text-[#d3c4b6]">
+          <p className="text-xs text-[var(--text-muted)]">
             Rastreabilidade operacional, validação de regras de marcenaria e bateria de testes automatizados.
           </p>
         </div>
 
         {/* Tab Selector */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#110d0c] border border-[#4f453a]/50 rounded-lg">
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg">
           <button
             onClick={() => setActiveTab('logs')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition ${
               activeTab === 'logs'
-                ? 'bg-[#2e2927] text-[#eae1dd] shadow-xs'
-                : 'text-[#9c8e82] hover:text-[#eae1dd]'
+                ? 'bg-[var(--bg-high)] text-[var(--text-main)] shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
             }`}
           >
-            <History className="w-3.5 h-3.5 text-[#fecc93]" />
+            <History className="w-3.5 h-3.5 text-[var(--color-primary)]" />
             Trilha de Auditoria ({auditLogs.length})
           </button>
           <button
             onClick={() => setActiveTab('tests')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition ${
               activeTab === 'tests'
-                ? 'bg-[#2e2927] text-[#eae1dd] shadow-xs'
-                : 'text-[#9c8e82] hover:text-[#eae1dd]'
+                ? 'bg-[var(--bg-high)] text-[var(--text-main)] shadow-xs'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-[#9cd499]" />
+            <Activity className="w-3.5 h-3.5 text-[var(--color-secondary)]" />
             Bateria de Testes ({passedCount}/{tests.length})
           </button>
         </div>
@@ -242,16 +242,16 @@ export const AuditView: React.FC<AuditViewProps> = ({ auditLogs }) => {
       {activeTab === 'tests' && (
         <div className="space-y-4">
           {/* Test Suite Summary Banner */}
-          <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-4 beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-4 beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1e2a1e] border border-[#3b5e39] flex items-center justify-center text-[#9cd499]">
+              <div className="w-10 h-10 rounded-xl bg-[var(--color-secondary-container)] border border-[var(--color-secondary)]/40 flex items-center justify-center text-[var(--color-secondary)]">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <span className="font-display font-bold text-sm text-[#eae1dd] block">
+                <span className="font-display font-bold text-sm text-[var(--text-main)] block">
                   Status Global do Sistema: 100% Operacional
                 </span>
-                <span className="text-xs text-[#9cd499] font-medium">
+                <span className="text-xs text-[var(--color-secondary)] font-medium">
                   {passedCount} de {tests.length} verificações validadas com sucesso
                 </span>
               </div>
@@ -272,22 +272,22 @@ export const AuditView: React.FC<AuditViewProps> = ({ auditLogs }) => {
             {tests.map((t) => (
               <div
                 key={t.id}
-                className="bg-[#231f1d] border border-[#4f453a]/40 rounded-xl p-3.5 beveled-card space-y-2 hover:border-[#fecc93]/40 transition"
+                className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-3.5 beveled-card space-y-2 hover:border-[var(--color-primary)]/40 transition"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[#110d0c] text-[#fecc93]">
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-[var(--bg-low)] text-[var(--color-primary)]">
                       {t.category}
                     </span>
-                    <h4 className="font-semibold text-xs text-[#eae1dd] pt-1">{t.name}</h4>
+                    <h4 className="font-semibold text-xs text-[var(--text-main)] pt-1">{t.name}</h4>
                   </div>
                   {t.status === 'passed' && (
-                    <span className="flex items-center gap-1 text-[11px] font-semibold text-[#9cd499] shrink-0 bg-[#1e2a1e] px-2 py-0.5 rounded-full border border-[#3b5e39]/40">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold text-[var(--color-secondary)] shrink-0 bg-[var(--color-secondary-container)] px-2 py-0.5 rounded-full border border-[var(--color-secondary)]/40">
                       <CheckCircle2 className="w-3.5 h-3.5" /> OK
                     </span>
                   )}
                   {t.status === 'running' && (
-                    <span className="flex items-center gap-1 text-[11px] font-semibold text-[#fecc93] shrink-0 bg-[#2d2417] px-2 py-0.5 rounded-full border border-[#7a5726]/40">
+                    <span className="flex items-center gap-1 text-[11px] font-semibold text-[var(--color-primary)] shrink-0 bg-[var(--color-primary-container)] px-2 py-0.5 rounded-full border border-[var(--color-primary)]/40">
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Testando
                     </span>
                   )}
@@ -298,13 +298,13 @@ export const AuditView: React.FC<AuditViewProps> = ({ auditLogs }) => {
                   )}
                 </div>
 
-                <p className="text-[11px] text-[#d3c4b6] leading-snug">{t.description}</p>
+                <p className="text-[11px] text-[var(--text-muted)] leading-snug">{t.description}</p>
 
                 {t.details && (
-                  <div className="bg-[#110d0c] px-2.5 py-1.5 rounded-lg border border-[#4f453a]/30 text-[11px] font-mono text-[#d3c4b6] debossed flex items-center justify-between">
+                  <div className="bg-[var(--bg-low)] px-2.5 py-1.5 rounded-lg border border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-muted)] debossed flex items-center justify-between">
                     <span className="truncate">{t.details}</span>
                     {t.latencyMs !== undefined && (
-                      <span className="text-[10px] text-[#9c8e82] ml-2 shrink-0">{t.latencyMs}ms</span>
+                      <span className="text-[10px] text-[var(--text-muted)] ml-2 shrink-0">{t.latencyMs}ms</span>
                     )}
                   </div>
                 )}
@@ -315,48 +315,48 @@ export const AuditView: React.FC<AuditViewProps> = ({ auditLogs }) => {
       )}
 
       {activeTab === 'logs' && (
-        <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-5 beveled-card space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#4f453a]/30">
-            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[#d3c4b6] flex items-center gap-2">
-              <History className="w-4 h-4 text-[#fecc93]" />
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-5 beveled-card space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--border-subtle)]">
+            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-2">
+              <History className="w-4 h-4 text-[var(--color-primary)]" />
               Trilha de Auditoria Recente ({filtered.length} eventos)
             </h3>
 
             <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#9c8e82]" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
               <input
                 type="text"
                 placeholder="Filtrar por usuário ou ação..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
               />
             </div>
           </div>
 
-          <div className="divide-y divide-[#4f453a]/20">
+          <div className="divide-y divide-[var(--border-subtle)]">
             {filtered.map((log) => (
               <div key={log.id} className="py-3.5 space-y-1.5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-xs text-[#eae1dd]">{log.action}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#110d0c] text-[#fecc93] uppercase">
+                    <span className="font-semibold text-xs text-[var(--text-main)]">{log.action}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-[var(--bg-low)] text-[var(--color-primary)] uppercase">
                       {log.entityType}
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-[#9c8e82]">
+                  <span className="text-[10px] font-mono text-[var(--text-muted)]">
                     {new Date(log.timestamp).toLocaleString('pt-BR')}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 text-[11px] text-[#d3c4b6]">
+                <div className="flex items-center gap-3 text-[11px] text-[var(--text-muted)]">
                   <span className="flex items-center gap-1">
-                    <User className="w-3 h-3 text-[#fecc93]" /> {log.actorName} ({log.actorRole})
+                    <User className="w-3 h-3 text-[var(--color-primary)]" /> {log.actorName} ({log.actorRole})
                   </span>
                 </div>
 
                 {log.details && (
-                  <div className="bg-[#110d0c] p-2.5 rounded-lg border border-[#4f453a]/30 text-[11px] font-mono text-[#d3c4b6] debossed">
+                  <div className="bg-[var(--bg-low)] p-2.5 rounded-lg border border-[var(--border-subtle)] text-[11px] font-mono text-[var(--text-muted)] debossed">
                     {log.details}
                   </div>
                 )}

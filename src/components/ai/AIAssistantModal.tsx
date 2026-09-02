@@ -147,18 +147,18 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-      <div className="bg-[#231f1d] border border-[#fecc93]/40 rounded-2xl max-w-2xl w-full beveled-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-2xl max-w-2xl w-full beveled-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Top Header */}
-        <div className="p-4 bg-[#1f1b19] border-b border-[#4f453a]/40 flex items-center justify-between">
+        <div className="p-4 bg-[var(--bg-low)] border-b border-[var(--border-subtle)] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#fecc93]/20 flex items-center justify-center text-[#fecc93]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-container)] flex items-center justify-center text-[var(--color-primary)]">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-display font-bold text-sm text-[#eae1dd]">
+              <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
                 Assistente de Inteligência Artificial WoodBit
               </h3>
-              <span className="text-[10px] text-[#fecc93] font-mono">
+              <span className="text-[10px] text-[var(--color-primary)] font-mono">
                 Ollama / LM Studio (Local-First) • Gemini Cloud Fallback
               </span>
             </div>
@@ -166,40 +166,40 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#9c8e82] hover:text-[#eae1dd] hover:bg-[#2e2927] cursor-pointer"
+            className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-high)] cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-[#4f453a]/40 bg-[#161311] px-4 pt-2 gap-2 text-xs">
+        <div className="flex border-b border-[var(--border-subtle)] bg-[var(--bg-low)] px-4 pt-2 gap-2 text-xs">
           <button
             onClick={() => setActiveTab('chat')}
-            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 ${
+            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'chat'
-                ? 'border-[#fecc93] text-[#fecc93]'
-                : 'border-transparent text-[#9c8e82] hover:text-[#d3c4b6]'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" /> Chat Operacional
           </button>
           <button
             onClick={() => setActiveTab('voice')}
-            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 ${
+            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'voice'
-                ? 'border-[#fecc93] text-[#fecc93]'
-                : 'border-transparent text-[#9c8e82] hover:text-[#d3c4b6]'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
             }`}
           >
             <Mic className="w-3.5 h-3.5" /> Orçamento por Voz (IA)
           </button>
           <button
             onClick={() => setActiveTab('vision')}
-            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 ${
+            className={`pb-2.5 px-3 font-semibold transition border-b-2 flex items-center gap-1.5 cursor-pointer ${
               activeTab === 'vision'
-                ? 'border-[#fecc93] text-[#fecc93]'
-                : 'border-transparent text-[#9c8e82] hover:text-[#d3c4b6]'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-main)]'
             }`}
           >
             <ImageIcon className="w-3.5 h-3.5" /> Análise Visual de Cômodos
@@ -211,7 +211,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
           {/* TAB 1: CHAT */}
           {activeTab === 'chat' && (
             <div className="flex flex-col h-[400px]">
-              <div className="flex-1 overflow-y-auto space-y-3 p-2 bg-[#161311] rounded-xl border border-[#4f453a]/30 debossed">
+              <div className="flex-1 overflow-y-auto space-y-3 p-2 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] debossed">
                 {chatMessages.map((msg, idx) => (
                   <div
                     key={idx}
@@ -222,19 +222,19 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     <div
                       className={`max-w-[85%] p-3 rounded-xl text-xs ${
                         msg.role === 'user'
-                          ? 'bg-[#644316] text-[#fecc93] border border-[#fecc93]/30'
-                          : 'bg-[#231f1d] text-[#eae1dd] border border-[#4f453a]/50'
+                          ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
+                          : 'bg-[var(--bg-container)] text-[var(--text-main)] border border-[var(--border-subtle)]'
                       }`}
                     >
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                      <span className="text-[9px] text-[#9c8e82] block text-right mt-1">
+                      <span className="text-[9px] text-[var(--text-muted)] block text-right mt-1">
                         {msg.time}
                       </span>
                     </div>
                   </div>
                 ))}
                 {isChatLoading && (
-                  <div className="text-xs text-[#fecc93] italic flex items-center gap-2 p-2">
+                  <div className="text-xs text-[var(--color-primary)] italic flex items-center gap-2 p-2">
                     <Sparkles className="w-3.5 h-3.5 animate-spin" /> Pensando via Ollama Local...
                   </div>
                 )}
@@ -247,11 +247,11 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   value={inputChat}
                   onChange={(e) => setInputChat(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendChat()}
-                  className="flex-1 bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-2 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                  className="flex-1 bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-2 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                 />
                 <button
                   onClick={handleSendChat}
-                  className="convex-btn p-2 rounded-lg text-[#3b2203] cursor-pointer"
+                  className="convex-btn p-2 rounded-lg cursor-pointer shadow-xs"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -262,18 +262,18 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
           {/* TAB 2: VOICE TO QUOTE */}
           {activeTab === 'voice' && (
             <div className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-[#1f1b19] border border-[#fecc93]/30 space-y-2">
+              <div className="p-3.5 rounded-xl bg-[var(--bg-low)] border border-[var(--border-subtle)] space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-xs text-[#eae1dd] flex items-center gap-2">
-                    <Mic className="w-4 h-4 text-[#fecc93]" />
+                  <span className="font-semibold text-xs text-[var(--text-main)] flex items-center gap-2">
+                    <Mic className="w-4 h-4 text-[var(--color-primary)]" />
                     Transcrição do Áudio do WhatsApp / Gravador de Voz
                   </span>
                   <button
                     onClick={() => setIsRecording(!isRecording)}
-                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer ${
                       isRecording
                         ? 'bg-[#93000a] text-white animate-pulse'
-                        : 'bg-[#2e2927] text-[#fecc93] border border-[#fecc93]/30'
+                        : 'bg-[var(--bg-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
                     }`}
                   >
                     {isRecording ? 'Gravando...' : 'Gravar Áudio'}
@@ -284,7 +284,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   rows={4}
                   value={transcribedAudioText}
                   onChange={(e) => setTranscribedAudioText(e.target.value)}
-                  className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg p-2.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                  className="w-full bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                 />
 
                 <div className="flex justify-end">
@@ -301,12 +301,12 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
 
               {/* Parsed Quote Structured Result */}
               {parsedQuoteResult && (
-                <div className="p-4 rounded-xl bg-[#161311] border border-[#4f453a]/50 space-y-3 debossed animate-in fade-in">
+                <div className="p-4 rounded-xl bg-[var(--bg-low)] border border-[var(--border-subtle)] space-y-3 debossed animate-in fade-in">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-display font-bold text-xs text-[#fecc93]">
+                    <h4 className="font-display font-bold text-xs text-[var(--color-primary)]">
                       Itens & Insumos Identificados Automaticamente
                     </h4>
-                    <span className="font-mono text-xs font-bold text-[#9cd499]">
+                    <span className="font-mono text-xs font-bold text-[var(--color-secondary)]">
                       Estimativa: R$ {parsedQuoteResult.suggestedTotalPrice?.toFixed(2)}
                     </span>
                   </div>
@@ -315,22 +315,22 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     {parsedQuoteResult.items?.map((it: any, idx: number) => (
                       <div
                         key={idx}
-                        className="p-2 bg-[#231f1d] rounded-lg border border-[#4f453a]/30 flex items-center justify-between"
+                        className="p-2 bg-[var(--bg-container)] rounded-lg border border-[var(--border-subtle)] flex items-center justify-between"
                       >
                         <div>
-                          <span className="font-medium text-[#eae1dd] block">{it.description}</span>
-                          <span className="text-[10px] text-[#9c8e82]">
+                          <span className="font-medium text-[var(--text-main)] block">{it.description}</span>
+                          <span className="text-[10px] text-[var(--text-muted)]">
                             {it.roomName} • {it.category}
                           </span>
                         </div>
-                        <span className="font-mono text-[#fecc93]">
+                        <span className="font-mono text-[var(--color-primary)]">
                           R$ {it.totalPrice?.toFixed(2)}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  <p className="text-[11px] text-[#d3c4b6] italic">
+                  <p className="text-[11px] text-[var(--text-muted)] italic">
                     Notas: {parsedQuoteResult.aiReasoning}
                   </p>
                 </div>
@@ -357,10 +357,10 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   <img
                     src={selectedImage}
                     alt="Foto do cômodo"
-                    className="rounded-xl border border-[#4f453a] w-full h-44 object-cover"
+                    className="rounded-xl border border-[var(--border-subtle)] w-full h-44 object-cover"
                   />
                   <div className="mt-2 flex justify-between">
-                    <span className="text-[10px] text-[#9c8e82]">Foto: Cozinha Casa Silva</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">Foto: Cozinha Casa Silva</span>
                     <button
                       onClick={handleAnalyzeVision}
                       disabled={isAnalyzingVision}
@@ -372,16 +372,16 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   </div>
                 </div>
 
-                <div className="bg-[#161311] border border-[#4f453a]/40 rounded-xl p-3.5 space-y-2 text-xs debossed">
-                  <h4 className="font-semibold text-xs text-[#fecc93] flex items-center gap-1.5">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl p-3.5 space-y-2 text-xs debossed">
+                  <h4 className="font-semibold text-xs text-[var(--color-primary)] flex items-center gap-1.5">
                     <Layers className="w-3.5 h-3.5" /> Interferências & Recomendações
                   </h4>
 
                   {visionAnalysisResult ? (
                     <div className="space-y-2">
-                      <p className="text-[#d3c4b6]">{visionAnalysisResult.generalImpression}</p>
+                      <p className="text-[var(--text-muted)]">{visionAnalysisResult.generalImpression}</p>
                       <div className="space-y-1">
-                        <span className="text-[10px] text-[#9c8e82] block">Possíveis Pontos de Atenção:</span>
+                        <span className="text-[10px] text-[var(--text-muted)] block">Possíveis Pontos de Atenção:</span>
                         <ul className="list-disc list-inside text-[11px] text-[#ffb4ab] space-y-0.5">
                           {visionAnalysisResult.detectedOutlets?.map((d: string, i: number) => (
                             <li key={i}>{d}</li>
@@ -390,7 +390,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="text-[#9c8e82] py-8 text-center text-xs">
+                    <div className="text-[var(--text-muted)] py-8 text-center text-xs">
                       Clique em "Analisar com IA" para processar desníveis, tomadas e vigas visíveis.
                     </div>
                   )}

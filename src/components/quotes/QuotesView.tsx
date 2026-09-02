@@ -275,19 +275,19 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
         {/* Right 8 Cols: Quotation Items, Cost Breakdown & Margin Guard Simulator */}
         <div className="lg:col-span-8 space-y-5">
           {selectedQuote ? (
-            <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-5 beveled-card space-y-5">
+            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-5 beveled-card space-y-5">
               {/* Top Details & Margin Guard Alert */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#4f453a]/40 gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border-subtle)] gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-[#fecc93]">
+                    <span className="font-mono text-sm font-bold text-[var(--color-primary)]">
                       {selectedQuote.quoteNumber}
                     </span>
-                    <h3 className="font-display font-bold text-sm text-[#eae1dd]">
+                    <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
                       {selectedQuote.projectTitle}
                     </h3>
                   </div>
-                  <p className="text-xs text-[#d3c4b6]">
+                  <p className="text-xs text-[var(--text-muted)]">
                     Cliente: {selectedQuote.customerName} • Prazo: {selectedQuote.estimatedProductionDays} dias
                   </p>
                 </div>
@@ -295,7 +295,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setShowPixModal(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#110d0c] hover:bg-[#2e2927] text-[#9cd499] border border-[#9cd499]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                     title="Gerar chave e QR Code PIX de entrada"
                   >
                     <QrCode className="w-3.5 h-3.5" /> Gerar PIX Entrada
@@ -303,7 +303,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
                   <button
                     onClick={() => setShowContractModal(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#110d0c] hover:bg-[#2e2927] text-[#fecc93] border border-[#fecc93]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
                     title="Emitir minuta de contrato com assinatura digital"
                   >
                     <FileCheck className="w-3.5 h-3.5" /> Gerar Contrato
@@ -311,10 +311,10 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
                   <button
                     onClick={handleCopyWhatsApp}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#2e2927] hover:bg-[#393431] text-[#eae1dd] border border-[#4f453a]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                     title="Copiar mensagem formatada para WhatsApp"
                   >
-                    <Share2 className="w-3.5 h-3.5 text-[#9cd499]" /> WhatsApp
+                    <Share2 className="w-3.5 h-3.5 text-[var(--color-secondary)]" /> WhatsApp
                   </button>
 
                   <button
@@ -331,14 +331,14 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                 className={`p-3.5 rounded-xl border flex items-center justify-between text-xs ${
                   selectedQuote.isBelowMinimumMargin
                     ? 'bg-[#93000a]/20 border-[#ffb4ab]/50 text-[#ffb4ab]'
-                    : 'bg-[#1d5123]/20 border-[#9cd499]/40 text-[#9cd499]'
+                    : 'bg-[var(--color-secondary-container)] border-[var(--color-secondary)]/40 text-[var(--color-secondary)]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   {selectedQuote.isBelowMinimumMargin ? (
                     <AlertTriangle className="w-5 h-5 text-[#ffb4ab] shrink-0" />
                   ) : (
-                    <CheckCircle2 className="w-5 h-5 text-[#9cd499] shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-[var(--color-secondary)] shrink-0" />
                   )}
                   <div>
                     <span className="font-bold block">
@@ -346,7 +346,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                         ? 'Alerta Margin Guard: Margem Abaixo do Mínimo!'
                         : 'Margin Guard: Orçamento em Conformidade Operacional'}
                     </span>
-                    <span className="text-[11px] text-[#eae1dd]/80">
+                    <span className="text-[11px] opacity-80">
                       Margem atual: <strong>{selectedQuote.marginPercent}%</strong> | Mínimo exigido: <strong>{selectedQuote.minimumMarginRequired}%</strong>
                     </span>
                   </div>
@@ -355,27 +355,27 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
               {/* Cost Summary Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="bg-[#1f1b19] border border-[#4f453a]/30 p-3 rounded-lg">
-                  <span className="text-[10px] text-[#9c8e82] block">Custo Total Matéria-Prima</span>
-                  <span className="font-bold text-[#eae1dd] text-sm">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Custo Total Matéria-Prima</span>
+                  <span className="font-bold text-[var(--text-main)] text-sm">
                     R$ {selectedQuote.totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="bg-[#1f1b19] border border-[#4f453a]/30 p-3 rounded-lg">
-                  <span className="text-[10px] text-[#9c8e82] block">Preço Final de Venda</span>
-                  <span className="font-bold text-[#9cd499] text-sm">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Preço Final de Venda</span>
+                  <span className="font-bold text-[var(--color-secondary)] text-sm">
                     R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="bg-[#1f1b19] border border-[#4f453a]/30 p-3 rounded-lg">
-                  <span className="text-[10px] text-[#9c8e82] block">Lucro Bruto Calculado</span>
-                  <span className="font-bold text-[#fecc93] text-sm">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Lucro Bruto Calculado</span>
+                  <span className="font-bold text-[var(--color-primary)] text-sm">
                     R$ {(selectedQuote.totalPrice - selectedQuote.totalCost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div className="bg-[#1f1b19] border border-[#4f453a]/30 p-3 rounded-lg">
-                  <span className="text-[10px] text-[#9c8e82] block">Margem de Contribuição</span>
-                  <span className="font-bold text-[#fecc93] text-sm">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Margem de Contribuição</span>
+                  <span className="font-bold text-[var(--color-primary)] text-sm">
                     {selectedQuote.marginPercent}%
                   </span>
                 </div>
@@ -383,12 +383,12 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
               {/* Items Table */}
               <div className="space-y-2">
-                <h4 className="font-display font-semibold text-xs text-[#eae1dd]">
+                <h4 className="font-display font-semibold text-xs text-[var(--text-main)]">
                   Composição de Itens do Orçamento
                 </h4>
-                <div className="overflow-x-auto border border-[#4f453a]/40 rounded-lg">
+                <div className="overflow-x-auto border border-[var(--border-subtle)] rounded-lg">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[#1f1b19] text-[#9c8e82] uppercase text-[10px] border-b border-[#4f453a]/40">
+                    <thead className="bg-[var(--bg-low)] text-[var(--text-muted)] uppercase text-[10px] border-b border-[var(--border-subtle)]">
                       <tr>
                         <th className="p-2.5">Ambiente / Item</th>
                         <th className="p-2.5">Categoria</th>
@@ -398,28 +398,28 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                         <th className="p-2.5 text-right">Total Venda</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#4f453a]/20 bg-[#161311]">
+                    <tbody className="divide-y divide-[var(--border-subtle)] bg-[var(--bg-container)]">
                       {selectedQuote.items.map((item) => (
-                        <tr key={item.id} className="hover:bg-[#1f1b19]/60">
+                        <tr key={item.id} className="hover:bg-[var(--bg-low)]/60">
                           <td className="p-2.5">
-                            <span className="font-medium text-[#eae1dd] block">{item.description}</span>
-                            <span className="text-[10px] text-[#9c8e82]">{item.roomName}</span>
+                            <span className="font-medium text-[var(--text-main)] block">{item.description}</span>
+                            <span className="text-[10px] text-[var(--text-muted)]">{item.roomName}</span>
                           </td>
                           <td className="p-2.5">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#2e2927] text-[#fecc93] font-mono uppercase">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-high)] text-[var(--color-primary)] font-mono uppercase">
                               {item.category}
                             </span>
                           </td>
                           <td className="p-2.5 font-mono">
                             {item.quantity} {item.unit}
                           </td>
-                          <td className="p-2.5 font-mono text-[#d3c4b6]">
+                          <td className="p-2.5 font-mono text-[var(--text-muted)]">
                             R$ {item.unitCost.toFixed(2)}
                           </td>
-                          <td className="p-2.5 font-mono text-[#fecc93]">
+                          <td className="p-2.5 font-mono text-[var(--color-primary)]">
                             {item.markup}x
                           </td>
-                          <td className="p-2.5 font-mono font-semibold text-right text-[#9cd499]">
+                          <td className="p-2.5 font-mono font-semibold text-right text-[var(--color-secondary)]">
                             R$ {item.totalPrice.toFixed(2)}
                           </td>
                         </tr>
@@ -430,20 +430,20 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               </div>
 
               {/* What-If Pricing Simulator */}
-              <div className="bg-[#1f1b19] border border-[#fecc93]/30 p-4 rounded-xl space-y-3 debossed">
+              <div className="bg-[var(--bg-low)] border border-[var(--color-primary)]/30 p-4 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-[#fecc93]" />
-                    <h4 className="font-display font-bold text-xs text-[#eae1dd]">
+                    <Sliders className="w-4 h-4 text-[var(--color-primary)]" />
+                    <h4 className="font-display font-bold text-xs text-[var(--text-main)]">
                       Simulador "What-if Pricing" (Sem alterar o orçamento base)
                     </h4>
                   </div>
-                  <span className="text-[11px] font-mono text-[#fecc93] font-bold">
+                  <span className="text-[11px] font-mono text-[var(--color-primary)] font-bold">
                     {whatIfPriceAdjustment > 0 ? `+${whatIfPriceAdjustment}%` : `${whatIfPriceAdjustment}%`}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#d3c4b6]/80">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   Simule o impacto de concessão de desconto ou aumento de tabela na margem real e no lucro líquido.
                 </p>
 
@@ -454,29 +454,29 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                   step="1"
                   value={whatIfPriceAdjustment}
                   onChange={(e) => setWhatIfPriceAdjustment(Number(e.target.value))}
-                  className="w-full accent-[#fecc93] cursor-pointer"
+                  className="w-full accent-[var(--color-primary)] cursor-pointer"
                 />
 
-                <div className="grid grid-cols-3 gap-3 text-xs pt-2 border-t border-[#4f453a]/30">
+                <div className="grid grid-cols-3 gap-3 text-xs pt-2 border-t border-[var(--border-subtle)]">
                   <div>
-                    <span className="text-[10px] text-[#9c8e82] block">Preço Simulado</span>
-                    <span className="font-bold text-[#eae1dd] font-mono">
+                    <span className="text-[10px] text-[var(--text-muted)] block">Preço Simulado</span>
+                    <span className="font-bold text-[var(--text-main)] font-mono">
                       R$ {simPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#9c8e82] block">Nova Margem</span>
+                    <span className="text-[10px] text-[var(--text-muted)] block">Nova Margem</span>
                     <span
                       className={`font-bold font-mono ${
-                        simMargin >= 25 ? 'text-[#9cd499]' : 'text-[#ffb4ab]'
+                        simMargin >= 25 ? 'text-[var(--color-secondary)]' : 'text-[#ffb4ab]'
                       }`}
                     >
                       {simMargin}%
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-[#9c8e82] block">Novo Lucro Bruto</span>
-                    <span className="font-bold text-[#fecc93] font-mono">
+                    <span className="text-[10px] text-[var(--text-muted)] block">Novo Lucro Bruto</span>
+                    <span className="font-bold text-[var(--color-primary)] font-mono">
                       R$ {simProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -484,7 +484,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               </div>
             </div>
           ) : (
-            <div className="bg-[#231f1d] border border-[#4f453a]/40 rounded-xl p-10 text-center text-[#9c8e82] text-xs">
+            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-10 text-center text-[var(--text-muted)] text-xs">
               Selecione um orçamento na lista para visualizar o cálculo detalhado de custos e margem.
             </div>
           )}
@@ -494,45 +494,45 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
       {/* Modal: Add Quote Item */}
       {showAddItemModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[#231f1d] border border-[#fecc93]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#4f453a]/40">
-              <h3 className="font-display font-bold text-sm text-[#eae1dd]">
+          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
                 Adicionar Item ao Orçamento
               </h3>
-              <button onClick={() => setShowAddItemModal(false)} className="text-[#9c8e82]">
+              <button onClick={() => setShowAddItemModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleAddItem} className="space-y-3">
               <div>
-                <label className="text-[11px] text-[#d3c4b6] block mb-1">Descrição do Item</label>
+                <label className="text-[11px] text-[var(--text-muted)] block mb-1">Descrição do Item</label>
                 <input
                   required
                   type="text"
                   placeholder="Ex: Chapa MDF Louro Freijó 18mm"
                   value={newItemDesc}
                   onChange={(e) => setNewItemDesc(e.target.value)}
-                  className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                  className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[11px] text-[#d3c4b6] block mb-1">Ambiente</label>
+                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Ambiente</label>
                   <input
                     type="text"
                     value={newItemRoom}
                     onChange={(e) => setNewItemRoom(e.target.value)}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#d3c4b6] block mb-1">Categoria</label>
+                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Categoria</label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value as any)}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-2 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)] cursor-pointer"
                   >
                     <option value="mdf">MDF / Chapas</option>
                     <option value="hardware">Ferragens & Corrediças</option>
@@ -546,51 +546,51 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
               <div className="grid grid-cols-3 gap-2.5">
                 <div>
-                  <label className="text-[11px] text-[#d3c4b6] block mb-1">Quantidade</label>
+                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Quantidade</label>
                   <input
                     type="number"
                     min="0.1"
                     step="0.1"
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#d3c4b6] block mb-1">Custo Unit. (R$)</label>
+                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Custo Unit. (R$)</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newItemCost}
                     onChange={(e) => setNewItemCost(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] text-[#d3c4b6] block mb-1">Markup (Multiplicador)</label>
+                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Markup (Multiplicador)</label>
                   <input
                     type="number"
                     min="1.0"
                     step="0.1"
                     value={newItemMarkup}
                     onChange={(e) => setNewItemMarkup(Number(e.target.value))}
-                    className="w-full bg-[#110d0c] border border-[#4f453a]/60 rounded-lg px-3 py-1.5 text-xs text-[#eae1dd] focus:outline-none focus:border-[#fecc93]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#4f453a]/40">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-subtle)]">
                 <button
                   type="button"
                   onClick={() => setShowAddItemModal(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs text-[#d3c4b6]"
+                  className="px-3 py-1.5 rounded-lg text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="convex-btn px-4 py-1.5 rounded-lg text-xs font-semibold"
+                  className="convex-btn px-4 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
                 >
                   Adicionar ao Orçamento
                 </button>
@@ -602,18 +602,18 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
       {/* Modal: PIX Down Payment (50%) */}
       {showPixModal && selectedQuote && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[#231f1d] border border-[#9cd499]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#4f453a]/40">
-              <h3 className="font-display font-bold text-sm text-[#eae1dd] flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-[#9cd499]" />
+          <div className="bg-[var(--bg-container)] border border-[var(--color-secondary)]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
+                <QrCode className="w-4 h-4 text-[var(--color-secondary)]" />
                 Cobrança PIX — Sinal de Entrada (50%)
               </h3>
-              <button onClick={() => setShowPixModal(false)} className="text-[#9c8e82] hover:text-[#eae1dd]">
+              <button onClick={() => setShowPixModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
                 ✕
               </button>
             </div>
 
-            <div className="text-center space-y-3 p-3 bg-[#110d0c] rounded-xl border border-[#4f453a]/40 debossed">
+            <div className="text-center space-y-3 p-3 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)]">
               <div className="bg-white p-3 rounded-lg inline-block shadow">
                 <div className="w-36 h-36 border-2 border-black flex flex-col items-center justify-center text-black font-mono text-[9px] p-2 space-y-1">
                   <QrCode className="w-20 h-20 text-black" />
@@ -622,18 +622,18 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] text-[#9c8e82] block">Valor do Sinal (50%)</span>
-                <span className="font-mono font-bold text-lg text-[#9cd499]">
+                <span className="text-[10px] text-[var(--text-muted)] block">Valor do Sinal (50%)</span>
+                <span className="font-mono font-bold text-lg text-[var(--color-secondary)]">
                   R$ {(selectedQuote.totalPrice * 0.5).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="text-[10px] text-[#d3c4b6] block mt-0.5">
+                <span className="text-[10px] text-[var(--text-muted)] block mt-0.5">
                   Beneficiário: WoodBit Marcenaria & CNC Ltda (Natividade - RJ)
                 </span>
               </div>
 
               {/* Copy Key */}
-              <div className="flex items-center gap-2 bg-[#1f1b19] p-2 rounded-lg border border-[#4f453a]/40 text-xs">
-                <span className="font-mono text-[10px] text-[#fecc93] truncate flex-1 text-left">
+              <div className="flex items-center gap-2 bg-[var(--bg-high)] p-2 rounded-lg border border-[var(--border-subtle)] text-xs">
+                <span className="font-mono text-[10px] text-[var(--color-primary)] truncate flex-1 text-left">
                   00020126360014BR.GOV.BCB.PIX0114000000000000005204000053039865802BR
                 </span>
                 <button
@@ -642,9 +642,9 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                     setCopiedPix(true);
                     setTimeout(() => setCopiedPix(false), 2000);
                   }}
-                  className="px-2 py-1 rounded bg-[#2e2927] hover:bg-[#393431] text-[#fecc93] text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
+                  className="px-2 py-1 rounded bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
                 >
-                  {copiedPix ? <Check className="w-3 h-3 text-[#9cd499]" /> : <Copy className="w-3 h-3" />}
+                  {copiedPix ? <Check className="w-3 h-3 text-[var(--color-secondary)]" /> : <Copy className="w-3 h-3" />}
                   {copiedPix ? 'Copiado!' : 'Copiar'}
                 </button>
               </div>
@@ -653,13 +653,13 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
             <div className="flex items-center justify-between pt-1">
               <button
                 onClick={() => setShowPixModal(false)}
-                className="px-3 py-1.5 rounded-lg bg-[#2e2927] text-xs text-[#d3c4b6]"
+                className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
               >
                 Fechar
               </button>
               <button
                 onClick={handleConfirmPixPayment}
-                className="convex-btn px-4 py-1.5 rounded-lg text-xs font-bold text-[#3b2203] flex items-center gap-1.5 cursor-pointer shadow"
+                className="convex-btn px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" /> Confirmar Pagamento do Sinal
               </button>
@@ -671,20 +671,20 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
       {/* Modal: Digital Contract & Signatures */}
       {showContractModal && selectedQuote && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[#231f1d] border border-[#fecc93]/40 rounded-xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[#4f453a]/40">
-              <h3 className="font-display font-bold text-sm text-[#eae1dd] flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-[#fecc93]" />
+          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
+                <FileCheck className="w-4 h-4 text-[var(--color-primary)]" />
                 Minuta de Contrato de Prestação de Serviços & Manufatura Digital
               </h3>
-              <button onClick={() => setShowContractModal(false)} className="text-[#9c8e82] hover:text-[#eae1dd]">
+              <button onClick={() => setShowContractModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
                 ✕
               </button>
             </div>
 
             {/* Contract Body Document */}
-            <div className="p-4 bg-[#110d0c] rounded-xl border border-[#4f453a]/50 text-xs text-[#d3c4b6] space-y-3 font-serif leading-relaxed debossed">
-              <p className="font-bold text-[#eae1dd] font-sans text-center uppercase tracking-wider text-[11px]">
+            <div className="p-4 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] text-xs text-[var(--text-main)] space-y-3 font-serif leading-relaxed">
+              <p className="font-bold text-[var(--text-main)] font-sans text-center uppercase tracking-wider text-[11px]">
                 INSTRUMENTO PARTICULAR DE FABRICAÇÃO E INSTALAÇÃO DE MOBILIÁRIO SOB MEDIDA
               </p>
 
@@ -707,22 +707,22 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                 <strong>CLÁUSULA 4ª (DA GARANTIA):</strong> Garantia de 5 (cinco) anos para ferragens com amortecimento e 1 (um) ano para alinhamento e estrutura em MDF. Foro da Comarca de Natividade - RJ.
               </p>
 
-              <div className="pt-3 border-t border-[#4f453a]/40 grid grid-cols-2 gap-4 text-center font-sans">
-                <div className="p-2 border border-dashed border-[#fecc93]/40 rounded bg-[#161311]">
-                  <span className="text-[10px] text-[#9c8e82] block">Assinado Digitalmente por:</span>
-                  <strong className="text-xs text-[#fecc93] block mt-1">WoodBit Marcenaria (Carlos)</strong>
-                  <span className="text-[9px] font-mono text-[#9cd499]">Hash: 8f4a-99e2-2026</span>
+              <div className="pt-3 border-t border-[var(--border-subtle)] grid grid-cols-2 gap-4 text-center font-sans">
+                <div className="p-2 border border-dashed border-[var(--color-primary)]/40 rounded bg-[var(--bg-container)]">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Assinado Digitalmente por:</span>
+                  <strong className="text-xs text-[var(--color-primary)] block mt-1">WoodBit Marcenaria (Carlos)</strong>
+                  <span className="text-[9px] font-mono text-[var(--color-secondary)]">Hash: 8f4a-99e2-2026</span>
                 </div>
-                <div className="p-2 border border-dashed border-[#4f453a] rounded bg-[#161311]">
-                  <span className="text-[10px] text-[#9c8e82] block">Aguardando Assinatura de:</span>
-                  <strong className="text-xs text-[#eae1dd] block mt-1">{selectedQuote.customerName}</strong>
-                  <span className="text-[9px] font-mono text-[#9c8e82]">Via Link do WhatsApp</span>
+                <div className="p-2 border border-dashed border-[var(--border-subtle)] rounded bg-[var(--bg-container)]">
+                  <span className="text-[10px] text-[var(--text-muted)] block">Aguardando Assinatura de:</span>
+                  <strong className="text-xs text-[var(--text-main)] block mt-1">{selectedQuote.customerName}</strong>
+                  <span className="text-[9px] font-mono text-[var(--text-muted)]">Via Link do WhatsApp</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-[#9c8e82]">
+              <span className="text-[11px] text-[var(--text-muted)]">
                 Contrato validado juridicamente segundo o Código Civil Brasileiro
               </span>
               <button
