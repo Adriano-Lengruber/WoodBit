@@ -11,9 +11,11 @@ import {
   ArrowRight,
   Lightbulb,
   Type,
-  Palette
+  Palette,
+  Download
 } from 'lucide-react';
 import { CatalogProduct, ProductionOrder } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface CatalogViewProps {
   products: CatalogProduct[];
@@ -24,6 +26,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   products,
   onGenerateOrderFromConfigurator,
 }) => {
+  const { showToast } = useToast();
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct>(products[0]);
 
   // Configurator Options
@@ -119,7 +122,41 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
     onGenerateOrderFromConfigurator(newOrder);
     setOrderCreatedSuccess(true);
+    showToast(
+      'Ordem de Produção Gerada!',
+      `${newOrder.orderNumber} enviada para usinagem CNC e impressão 3D.`,
+      'success'
+    );
     setTimeout(() => setOrderCreatedSuccess(false), 4000);
+  };
+
+  const handleExportSpec = () => {
+    let spec = `=====================================================\n`;
+    spec += `WOODBIT LAB - FICHA TÉCNICA PARAMÉTRICA DO PRODUTO\n`;
+    spec += `Produto: ${selectedProduct.name}\n`;
+    spec += `Acabamento: ${finish.toUpperCase()}\n`;
+    spec += `Dimensões: ${size}0 x 800 x 25 mm\n`;
+    spec += `Gravação CNC: ${engravingText || 'Sem gravação'}\n`;
+    spec += `Iluminação LED: ${hasLed ? `Sim (${ledColor.toUpperCase()})` : 'Não'}\n`;
+    spec += `Acessórios 3D PETG:\n`;
+    selectedAccessories.forEach((acc, i) => {
+      spec += `  ${i + 1}. ${acc}\n`;
+    });
+    spec += `\nVALOR DE VENDA: R$ ${basePrice.toFixed(2)}\n`;
+    spec += `CUSTO ESTIMADO: R$ ${estimatedCost.toFixed(2)} (Margem ${marginPercent}%)\n`;
+    spec += `=====================================================\n`;
+
+    const blob = new Blob([spec], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ficha_parametrica_${selectedProduct.id}_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Ficha Técnica Exportada!', 'Especificações salvas para produção.', 'success');
   };
 
   return (
@@ -215,7 +252,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
           </div>
 
           {/* Pricing & Margin Summary Box */}
-          <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-4 flex items-center justify-between beveled-card">
+          <div className="bg-[#231f1d] border border-[#4f453a]/50 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 beveled-card">
             <div>
               <span className="text-[10px] text-[#9c8e82] block">Valor de Venda Sugerido</span>
               <span className="font-display font-bold text-2xl text-[#9cd499]">
@@ -226,14 +263,24 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
               </span>
             </div>
 
-            <button
-              id="btn-generate-order-from-configurator"
-              onClick={handleCreateOrder}
-              className="convex-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-lg"
-            >
-              <Cpu className="w-4 h-4" />
-              1-Click: Gerar OP Fábrica
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportSpec}
+                className="px-3 py-2 rounded-lg bg-[#2e2927] hover:bg-[#393431] text-[#eae1dd] text-xs font-semibold flex items-center gap-1.5 cursor-pointer border border-[#4f453a]/40 shadow-xs"
+                title="Exportar Ficha Técnica"
+              >
+                <Download className="w-3.5 h-3.5 text-[#fecc93]" />
+                Exportar Ficha
+              </button>
+              <button
+                id="btn-generate-order-from-configurator"
+                onClick={handleCreateOrder}
+                className="convex-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-lg"
+              >
+                <Cpu className="w-4 h-4" />
+                1-Click: Gerar OP Fábrica
+              </button>
+            </div>
           </div>
 
           {orderCreatedSuccess && (

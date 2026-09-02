@@ -12,9 +12,11 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Download
 } from 'lucide-react';
 import { Project } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface FieldVisitViewProps {
   projects: Project[];
@@ -29,6 +31,8 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
   onSelectCity,
   onUpdateProjects,
 }) => {
+  const { showToast } = useToast();
+
   // Filter projects by city if applicable
   const availableProjects = projects.filter((p) => {
     if (selectedCity === 'all') return true;
@@ -62,12 +66,16 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
 
   const handleAddPhoto = () => {
     if (!newPhotoLabel.trim()) return;
-    setPhotos([...photos, newPhotoLabel.trim()]);
+    const added = newPhotoLabel.trim();
+    setPhotos([...photos, added]);
     setNewPhotoLabel('');
+    showToast('Registro Fotográfico Anexado!', `"${added}" adicionado ao laudo.`, 'success');
   };
 
   const handleRemovePhoto = (idx: number) => {
+    const removed = photos[idx];
     setPhotos(photos.filter((_, i) => i !== idx));
+    showToast('Foto Removida', `"${removed}" removido do laudo.`, 'info');
   };
 
   const handleValidatePackage = () => {
@@ -103,7 +111,48 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
 
     onUpdateProjects(updated);
     setValidationSuccess(true);
+    showToast(
+      'Medição Validada com Sucesso!',
+      `Projeto "${selectedProject.title}" liberado para corte CNC e marcenaria.`,
+      'success'
+    );
     setTimeout(() => setValidationSuccess(false), 5000);
+  };
+
+  const handleExportLaudo = () => {
+    if (!selectedProject) return;
+    let laudo = `=====================================================\n`;
+    laudo += `WOODBIT MARCENARIA & CNC - LAUDO TÉCNICO DE MEDIÇÃO\n`;
+    laudo += `Projeto: ${selectedProject.title} (${selectedProject.code})\n`;
+    laudo += `Cliente: ${selectedProject.customerName}\n`;
+    laudo += `Endereço: ${selectedProject.address}, ${selectedProject.city} - RJ\n`;
+    laudo += `Data da Visita: ${new Date().toLocaleDateString('pt-BR')}\n`;
+    laudo += `Responsável: Técnico Especialista WoodBit (Polo ${selectedProject.city})\n`;
+    laudo += `=====================================================\n\n`;
+    laudo += `CHECKLIST ESTRUTURAL & INSTALAÇÕES:\n`;
+    laudo += `1. Desaprumo e Esquadro: ${prumoVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
+    laudo += `2. Pé-Direito Mínimo: ${peDireitoVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
+    laudo += `3. Pontos Elétricos (110V/220V): ${tomadasVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
+    laudo += `4. Hidráulica & Gás: ${hidraulicaVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
+    laudo += `5. Logística de Acesso: ${acessoElevadorVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n\n`;
+    laudo += `REGISTROS FOTOGRÁFICOS (${photos.length} fotos):\n`;
+    photos.forEach((ph, i) => {
+      laudo += `  - Foto #${i + 1}: ${ph}\n`;
+    });
+    laudo += `\nOBSERVAÇÕES DO MEDIDOR:\n${obsText}\n\n`;
+    laudo += `STATUS: LIBERADO PARA CORTE CNC E MARCENARIA\n`;
+
+    const blob = new Blob([laudo], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `laudo_medicao_${selectedProject.code}_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast('Laudo Técnico Exportado!', 'Arquivo gerado para arquivo físico ou envio ao cliente.', 'success');
   };
 
   return (
@@ -367,7 +416,14 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
               </span>
             </div>
 
-            <div className="flex items-center justify-end gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <button
+                onClick={handleExportLaudo}
+                className="px-4 py-2.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-high)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Download className="w-4 h-4 text-[var(--color-primary)]" />
+                Exportar Laudo (.txt)
+              </button>
               <button
                 id="btn-validate-measurement-package"
                 onClick={handleValidatePackage}

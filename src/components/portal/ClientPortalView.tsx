@@ -15,9 +15,12 @@ import {
   MapPin,
   FileDown,
   ExternalLink,
-  Award
+  Award,
+  Copy,
+  Share2
 } from 'lucide-react';
 import { Project, Quote } from '../../types';
+import { useToast } from '../../context/ToastContext';
 
 interface ClientPortalViewProps {
   projects: Project[];
@@ -28,6 +31,7 @@ export const ClientPortalView: React.FC<ClientPortalViewProps> = ({
   projects,
   quotes,
 }) => {
+  const { showToast } = useToast();
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projects[0]?.id || '');
   const currentProject = projects.find((p) => p.id === selectedProjectId) || projects[0];
   const currentQuote = quotes.find((q) => q.projectId === currentProject?.id) || quotes[0];
@@ -77,15 +81,37 @@ export const ClientPortalView: React.FC<ClientPortalViewProps> = ({
   const handleSignContract = () => {
     if (!contractAccepted) return;
     setIsSigned(true);
-    setSignatureDate(new Date().toLocaleString('pt-BR'));
+    const dateStr = new Date().toLocaleString('pt-BR');
+    setSignatureDate(dateStr);
+    showToast(
+      'Contrato Assinado Digitalmente!',
+      `Aceite registrado para ${currentProject?.customerName} (${currentProject?.code}).`,
+      'success'
+    );
   };
 
   const handleSendTicket = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketMessage.trim()) return;
     setTicketSent(true);
+    const sentMsg = ticketMessage;
     setTicketMessage('');
+    showToast(
+      'Mensagem Enviada ao Atendimento!',
+      'Nossa equipe de marceneiros em Natividade responderá em breve.',
+      'success'
+    );
     setTimeout(() => setTicketSent(false), 5000);
+  };
+
+  const handleCopyPortalLink = () => {
+    const url = window.location.href;
+    try {
+      navigator.clipboard.writeText(url);
+      showToast('Link do Portal Copiado!', 'Envie este link para o cliente acompanhar a obra.', 'success');
+    } catch {
+      showToast('Link do Portal', url, 'info');
+    }
   };
 
   return (
@@ -101,7 +127,15 @@ export const ClientPortalView: React.FC<ClientPortalViewProps> = ({
           </h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={handleCopyPortalLink}
+            className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-surface)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+            title="Copiar link público do portal"
+          >
+            <Share2 className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+            <span className="hidden sm:inline">Compartilhar Link</span>
+          </button>
           <span className="text-xs text-[var(--text-muted)]">Selecionar Obra:</span>
           <select
             value={selectedProjectId}
