@@ -19,7 +19,12 @@ import {
   Check,
   MapPin,
   FileDown,
-  ExternalLink
+  ExternalLink,
+  ChevronRight,
+  TrendingUp,
+  Percent,
+  Calculator,
+  Hammer
 } from 'lucide-react';
 import { Quote, QuoteItem, ProductLine, Project } from '../../types';
 import { useToast } from '../../context/ToastContext';
@@ -47,7 +52,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
   const filteredQuotes = quotes.filter((q) => {
     if (selectedCity === 'all') return true;
     const proj = projects.find((p) => p.id === q.projectId || p.title === q.projectTitle);
-    if (!proj) return true; // keep if unknown or matches
+    if (!proj) return true;
     return proj.city.toLowerCase() === selectedCity.toLowerCase();
   });
 
@@ -122,14 +127,15 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
   // What-if simulator calculations
   const simPrice = selectedQuote ? selectedQuote.totalPrice * (1 + whatIfPriceAdjustment / 100) : 0;
-  const simMargin = selectedQuote && simPrice > 0
-    ? Math.round(((simPrice - selectedQuote.totalCost) / simPrice) * 1000) / 10
-    : 0;
+  const simMargin =
+    selectedQuote && simPrice > 0
+      ? Math.round(((simPrice - selectedQuote.totalCost) / simPrice) * 1000) / 10
+      : 0;
   const simProfit = selectedQuote ? simPrice - selectedQuote.totalCost : 0;
 
   const handleCopyWhatsApp = () => {
     if (!selectedQuote) return;
-    const msg = `Olá ${selectedQuote.customerName}! Segue a proposta detalhada da WoodBit Marcenaria & CNC para o projeto *${selectedQuote.projectTitle}* no valor de R$ ${selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} com prazo de ${selectedQuote.estimatedProductionDays} dias.`;
+    const msg = `Olá ${selectedQuote.customerName}! Segue a proposta detalhada da WoodBit Marcenaria & Fabricação Digital para o projeto *${selectedQuote.projectTitle}* no valor de R$ ${selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} com prazo estimado de ${selectedQuote.estimatedProductionDays} dias úteis.`;
     try {
       navigator.clipboard.writeText(msg);
       showToast('Texto Copiado para o WhatsApp!', 'Abra a conversa do cliente e cole a proposta.', 'success');
@@ -140,54 +146,93 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
   const handleConfirmPixPayment = () => {
     if (!selectedQuote) return;
-    const updatedQuote: Quote = {
-      ...selectedQuote,
-      status: 'approved',
-    };
-    const updatedList = quotes.map((q) => (q.id === selectedQuote.id ? updatedQuote : q));
-    onUpdateQuotes(updatedList);
-    setSelectedQuote(updatedQuote);
+    const updated = quotes.map((q) =>
+      q.id === selectedQuote.id ? { ...q, status: 'approved' as const } : q
+    );
+    onUpdateQuotes(updated);
+    setSelectedQuote({ ...selectedQuote, status: 'approved' });
     setShowPixModal(false);
-    showToast('Sinal PIX Confirmado!', 'Status alterado para Aprovado e insumos reservados com sucesso.', 'success');
+    showToast(
+      'Sinal Confirmado via PIX!',
+      `Entrada de 50% registrada para o projeto ${selectedQuote.projectTitle}.`,
+      'success'
+    );
   };
 
   const handleSendContract = () => {
     setShowContractModal(false);
-    showToast('Contrato Enviado!', 'Link de assinatura eletrônica enviado ao cliente.', 'success');
+    showToast(
+      'Minuta de Contrato Enviada!',
+      'Link com assinatura eletrônica enviado ao WhatsApp do cliente.',
+      'success'
+    );
   };
+
+  // Category labels helper
+  const getCategoryBadge = (cat: QuoteItem['category']) => {
+    switch (cat) {
+      case 'mdf':
+        return { label: 'MDF / Chapas', color: 'bg-amber-950/70 text-amber-300 border-amber-500/30' };
+      case 'hardware':
+        return { label: 'Ferragens', color: 'bg-slate-800/80 text-slate-300 border-slate-600/30' };
+      case 'cnc_service':
+        return { label: 'Usinagem CNC', color: 'bg-sky-950/70 text-sky-300 border-sky-500/30' };
+      case 'print_3d':
+        return { label: 'Impressão 3D', color: 'bg-purple-950/70 text-purple-300 border-purple-500/30' };
+      case 'labor':
+        return { label: 'Mão de Obra', color: 'bg-indigo-950/70 text-indigo-300 border-indigo-500/30' };
+      case 'led_electronics':
+        return { label: 'LED / Elétrica', color: 'bg-emerald-950/70 text-emerald-300 border-emerald-500/30' };
+      default:
+        return { label: 'Outros', color: 'bg-slate-800 text-slate-300 border-slate-700' };
+    }
+  };
+
+  // Calculate Cost Breakdown by Category for selected quote
+  const costBreakdown = selectedQuote
+    ? selectedQuote.items.reduce((acc, item) => {
+        acc[item.category] = (acc[item.category] || 0) + item.totalCost;
+        return acc;
+      }, {} as Record<string, number>)
+    : {};
 
   return (
     <div id="quotes-view-container" className="space-y-6 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-xl beveled-card flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-display font-bold text-base text-[var(--text-main)] flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[var(--color-primary)]" />
-            Orçamentos & Engenharia de Preços
-          </h2>
-          <p className="text-xs text-[var(--text-muted)]">
-            Composição técnica de custos (MDF, CNC, 3D, Mão de obra) com proteção Margin Guard e simulador What-if.
-          </p>
+      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-5 rounded-2xl beveled-card flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--bg-low)] flex items-center justify-center text-[var(--color-primary)] border border-[var(--border-subtle)] shadow-xs">
+            <FileText className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-display font-bold text-lg text-[var(--text-main)] flex items-center gap-2">
+              Orçamentos & Engenharia de Preços
+            </h2>
+            <p className="text-xs text-[var(--text-muted)] font-medium">
+              Composição de custos (MDF, CNC, 3D, Mão de Obra), proteção Margin Guard e simulador What-If.
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             id="btn-voice-to-quote"
             onClick={onOpenVoiceAssistant}
-            className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs"
           >
-            <Sparkles className="w-4 h-4" /> Orçamento por Voz (IA)
+            <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+            Orçamento por Voz (IA Local)
           </button>
         </div>
       </div>
 
-      {/* City Filter Notice */}
+      {/* Regional Filter Indicator */}
       {selectedCity !== 'all' && (
-        <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-3 px-4 flex items-center justify-between gap-3 beveled-card shadow-xs text-xs">
-          <div className="flex items-center gap-2">
+        <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-3.5 px-4 flex items-center justify-between gap-3 beveled-card shadow-xs text-xs">
+          <div className="flex items-center gap-2.5">
             <MapPin className="w-4 h-4 text-[var(--color-primary)]" />
-            <span className="text-[var(--text-main)]">
-              Exibindo orçamentos do polo regional: <strong className="text-[var(--color-primary)]">{selectedCity} - RJ</strong>
+            <span className="text-[var(--text-main)] font-medium">
+              Exibindo propostas do polo: <strong className="text-[var(--color-primary)] font-bold">{selectedCity} - RJ</strong>
             </span>
           </div>
           {onSelectCity && (
@@ -195,25 +240,26 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               onClick={() => onSelectCity('all')}
               className="text-[var(--color-primary)] hover:underline font-bold cursor-pointer"
             >
-              ✕ Ver Todas as Cidades
+              ✕ Exibir Todas as Cidades
             </button>
           )}
         </div>
       )}
 
-      {/* Main Grid: Quotes List on Left, Detail & Margin Guard on Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      {/* Main Grid: Quotes List (4 cols) & Detail / Margin Guard (8 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 4 Cols: Quotes List */}
-        <div className="lg:col-span-4 space-y-3">
+        <div className="lg:col-span-4 space-y-3.5">
           <div className="flex items-center justify-between">
             <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-muted)]">
               Propostas Emitidas ({filteredQuotes.length})
             </h3>
           </div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {filteredQuotes.map((q) => {
               const quoteCity = getQuoteCity(q);
+              const isSelected = selectedQuote?.id === q.id;
               return (
                 <div
                   key={q.id}
@@ -221,45 +267,50 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                     setSelectedQuote(q);
                     setWhatIfPriceAdjustment(0);
                   }}
-                  className={`p-3.5 rounded-xl border transition cursor-pointer text-left space-y-2 ${
-                    selectedQuote?.id === q.id
-                      ? 'bg-[var(--bg-high)] border-[var(--color-primary)] shadow-md beveled-card'
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer text-left space-y-2.5 ${
+                    isSelected
+                      ? 'bg-[var(--bg-high)] border-[var(--color-primary)] shadow-md beveled-card ring-1 ring-[var(--color-primary)]/40'
                       : 'bg-[var(--bg-container)] border-[var(--border-subtle)] hover:border-[var(--color-primary)]/40'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-mono font-bold text-[var(--color-primary)]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold text-[var(--color-primary)] bg-[var(--bg-lowest)] px-2 py-0.5 rounded-md border border-[var(--border-subtle)]">
                           {q.quoteNumber} (v{q.version})
                         </span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-[var(--bg-low)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+                        <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--bg-low)] text-slate-300 border border-[var(--border-subtle)] font-medium">
                           {quoteCity}
                         </span>
                       </div>
-                      <h4 className="font-semibold text-xs text-[var(--text-main)] mt-0.5">{q.projectTitle}</h4>
-                      <p className="text-[11px] text-[var(--text-muted)]">{q.customerName}</p>
+                      <h4 className="font-bold text-sm text-[var(--text-main)] mt-1.5 leading-snug">
+                        {q.projectTitle}
+                      </h4>
+                      <p className="text-xs text-[var(--text-muted)] font-medium">{q.customerName}</p>
                     </div>
+
                     <span
-                      className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                      className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ${
                         q.status === 'approved'
-                          ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)]'
+                          ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/30'
                           : q.status === 'sent'
-                          ? 'bg-[#644316]/30 text-[var(--color-primary)]'
-                          : 'bg-[var(--bg-low)] text-[var(--text-muted)]'
+                          ? 'bg-amber-950/80 text-amber-300 border border-amber-500/30'
+                          : 'bg-slate-800 text-slate-300 border border-slate-700'
                       }`}
                     >
                       {q.status}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[var(--border-subtle)]">
-                    <span className="text-[var(--color-secondary)] font-bold font-mono">
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-[var(--border-subtle)]">
+                    <span className="text-emerald-400 font-bold font-mono text-sm">
                       R$ {q.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                     <span
-                      className={`text-[11px] font-semibold ${
-                        q.isBelowMinimumMargin ? 'text-[#ffb4ab]' : 'text-[var(--color-primary)]'
+                      className={`font-mono font-bold text-xs px-2 py-0.5 rounded-md ${
+                        q.isBelowMinimumMargin
+                          ? 'bg-rose-950/70 text-rose-300 border border-rose-500/30'
+                          : 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/30'
                       }`}
                     >
                       Margem: {q.marginPercent}%
@@ -271,181 +322,284 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
           </div>
         </div>
 
-
-        {/* Right 8 Cols: Quotation Items, Cost Breakdown & Margin Guard Simulator */}
-        <div className="lg:col-span-8 space-y-5">
+        {/* Right 8 Cols: Quotation Detail, Breakdown & Margin Guard Simulator */}
+        <div className="lg:col-span-8 space-y-6">
           {selectedQuote ? (
-            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-5 beveled-card space-y-5">
-              {/* Top Details & Margin Guard Alert */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[var(--border-subtle)] gap-3">
+            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-2xl p-6 beveled-card shadow-md space-y-6">
+              {/* Top Header & Actions */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[var(--border-subtle)] gap-4">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-[var(--color-primary)]">
+                  <div className="flex items-center gap-2.5">
+                    <span className="font-mono text-base font-bold text-[var(--color-primary)]">
                       {selectedQuote.quoteNumber}
                     </span>
-                    <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
+                    <h3 className="font-display font-bold text-base text-[var(--text-main)]">
                       {selectedQuote.projectTitle}
                     </h3>
                   </div>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    Cliente: {selectedQuote.customerName} • Prazo: {selectedQuote.estimatedProductionDays} dias
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5 font-medium">
+                    Cliente: <strong className="text-slate-200">{selectedQuote.customerName}</strong> • Prazo Estimado:{' '}
+                    <strong className="text-slate-200">{selectedQuote.estimatedProductionDays} dias úteis</strong>
                   </p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setShowPixModal(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Gerar chave e QR Code PIX de entrada"
+                    className="px-3 py-1.5 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-emerald-400 border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                    title="Gerar chave e QR Code PIX de entrada (50%)"
                   >
-                    <QrCode className="w-3.5 h-3.5" /> Gerar PIX Entrada
+                    <QrCode className="w-4 h-4" /> PIX Entrada
                   </button>
 
                   <button
                     onClick={() => setShowContractModal(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title="Emitir minuta de contrato com assinatura digital"
+                    className="px-3 py-1.5 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                    title="Emitir contrato formal com assinatura digital"
                   >
-                    <FileCheck className="w-3.5 h-3.5" /> Gerar Contrato
+                    <FileCheck className="w-4 h-4" /> Contrato
                   </button>
 
                   <button
                     onClick={handleCopyWhatsApp}
-                    className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
-                    title="Copiar mensagem formatada para WhatsApp"
+                    className="px-3 py-1.5 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-slate-200 border border-[var(--border-subtle)] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
+                    title="Copiar texto para WhatsApp"
                   >
-                    <Share2 className="w-3.5 h-3.5 text-[var(--color-secondary)]" /> WhatsApp
+                    <Share2 className="w-4 h-4 text-emerald-400" /> WhatsApp
                   </button>
 
                   <button
                     onClick={() => setShowAddItemModal(true)}
-                    className="convex-btn px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                    className="convex-btn px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
                   >
-                    <Plus className="w-3.5 h-3.5" /> Adicionar Item
+                    <Plus className="w-4 h-4" /> Adicionar Item
                   </button>
                 </div>
               </div>
 
-              {/* Margin Guard Status Banner */}
+              {/* Margin Guard Status Alert */}
               <div
-                className={`p-3.5 rounded-xl border flex items-center justify-between text-xs ${
+                className={`p-4 rounded-2xl border flex items-center justify-between text-xs transition-all ${
                   selectedQuote.isBelowMinimumMargin
-                    ? 'bg-[#93000a]/20 border-[#ffb4ab]/50 text-[#ffb4ab]'
-                    : 'bg-[var(--color-secondary-container)] border-[var(--color-secondary)]/40 text-[var(--color-secondary)]'
+                    ? 'bg-rose-950/40 border-rose-500/50 text-rose-200'
+                    : 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-3">
                   {selectedQuote.isBelowMinimumMargin ? (
-                    <AlertTriangle className="w-5 h-5 text-[#ffb4ab] shrink-0" />
+                    <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
                   ) : (
-                    <CheckCircle2 className="w-5 h-5 text-[var(--color-secondary)] shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
                   )}
                   <div>
-                    <span className="font-bold block">
+                    <span className="font-bold text-sm block">
                       {selectedQuote.isBelowMinimumMargin
-                        ? 'Alerta Margin Guard: Margem Abaixo do Mínimo!'
-                        : 'Margin Guard: Orçamento em Conformidade Operacional'}
+                        ? 'Alerta Margin Guard: Margem Abaixo do Piso Operacional!'
+                        : 'Margin Guard: Orçamento em Plena Conformidade'}
                     </span>
-                    <span className="text-[11px] opacity-80">
-                      Margem atual: <strong>{selectedQuote.marginPercent}%</strong> | Mínimo exigido: <strong>{selectedQuote.minimumMarginRequired}%</strong>
+                    <span className="text-xs opacity-90 block mt-0.5">
+                      Margem atual: <strong>{selectedQuote.marginPercent}%</strong> | Mínimo exigido pela oficina:{' '}
+                      <strong>{selectedQuote.minimumMarginRequired}%</strong>
                     </span>
+                  </div>
+                </div>
+
+                <span className="font-mono text-xs font-bold px-3 py-1 rounded-lg bg-black/40 border border-white/10">
+                  {selectedQuote.isBelowMinimumMargin ? 'RISCO DETECTADO' : 'APROVADO'}
+                </span>
+              </div>
+
+              {/* Cost Summary Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-4 rounded-xl space-y-1">
+                  <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                    Custo Matéria-Prima
+                  </span>
+                  <span className="font-bold font-mono text-[var(--text-main)] text-lg block">
+                    R$ {selectedQuote.totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-xs text-[var(--text-faint)]">MDF, ferragens, fresas</span>
+                </div>
+
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-4 rounded-xl space-y-1">
+                  <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                    Preço de Venda
+                  </span>
+                  <span className="font-bold font-mono text-emerald-400 text-lg block">
+                    R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-xs text-emerald-500/80">Valor final ao cliente</span>
+                </div>
+
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-4 rounded-xl space-y-1">
+                  <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                    Lucro Bruto
+                  </span>
+                  <span className="font-bold font-mono text-[var(--color-primary)] text-lg block">
+                    R$ {(selectedQuote.totalPrice - selectedQuote.totalCost).toLocaleString('pt-BR', {
+                      minimumFractionDigits: 2,
+                    })}
+                  </span>
+                  <span className="text-xs text-[var(--text-faint)]">Margem líquida bruta</span>
+                </div>
+
+                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-4 rounded-xl space-y-1">
+                  <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                    Margem Efetiva
+                  </span>
+                  <span className="font-bold font-mono text-amber-400 text-lg block">
+                    {selectedQuote.marginPercent}%
+                  </span>
+                  <span className="text-xs text-[var(--text-faint)]">
+                    Piso: {selectedQuote.minimumMarginRequired}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Visual Cost Composition Bar Chart */}
+              <div className="space-y-2 bg-[var(--bg-low)] p-4 rounded-xl border border-[var(--border-subtle)]">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                    <Calculator className="w-4 h-4 text-amber-400" />
+                    Composição Visual de Custos do Orçamento
+                  </span>
+                  <span className="font-mono text-slate-400">
+                    Custo R$ {selectedQuote.totalCost.toLocaleString('pt-BR')} (
+                    {Math.round((selectedQuote.totalCost / selectedQuote.totalPrice) * 100)}%) + Lucro (
+                    {selectedQuote.marginPercent}%)
+                  </span>
+                </div>
+
+                <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex shadow-inner">
+                  {(Object.entries(costBreakdown) as [string, number][]).map(([cat, val], i) => {
+                    const pct = Math.max(2, Math.round((Number(val) / selectedQuote.totalPrice) * 100));
+                    const colors = [
+                      'bg-amber-500',
+                      'bg-sky-500',
+                      'bg-purple-500',
+                      'bg-indigo-500',
+                      'bg-slate-400',
+                    ];
+                    return (
+                      <div
+                        key={cat}
+                        className={`${colors[i % colors.length]} transition-all duration-300`}
+                        style={{ width: `${pct}%` }}
+                        title={`${cat}: R$ ${Number(val).toFixed(2)} (${pct}%)`}
+                      />
+                    );
+                  })}
+                  <div
+                    className="bg-emerald-500 transition-all duration-300"
+                    style={{ width: `${selectedQuote.marginPercent}%` }}
+                    title={`Lucro Bruto: ${selectedQuote.marginPercent}%`}
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 text-xs pt-1 text-slate-400 font-medium">
+                  {(Object.entries(costBreakdown) as [string, number][]).map(([cat, val], i) => {
+                    const badge = getCategoryBadge(cat as any);
+                    return (
+                      <div key={cat} className="flex items-center gap-1.5">
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full ${
+                            ['bg-amber-500', 'bg-sky-500', 'bg-purple-500', 'bg-indigo-500', 'bg-slate-400'][
+                              i % 5
+                            ]
+                          }`}
+                        ></span>
+                        <span>
+                          {badge.label}:{' '}
+                          <strong className="text-slate-200">R$ {Number(val).toFixed(0)}</strong>
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-center gap-1.5 ml-auto text-emerald-400 font-bold">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span>Lucro: {selectedQuote.marginPercent}%</span>
                   </div>
                 </div>
               </div>
 
-              {/* Cost Summary Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Custo Total Matéria-Prima</span>
-                  <span className="font-bold text-[var(--text-main)] text-sm">
-                    R$ {selectedQuote.totalCost.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Preço Final de Venda</span>
-                  <span className="font-bold text-[var(--color-secondary)] text-sm">
-                    R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Lucro Bruto Calculado</span>
-                  <span className="font-bold text-[var(--color-primary)] text-sm">
-                    R$ {(selectedQuote.totalPrice - selectedQuote.totalCost).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-                <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] p-3 rounded-lg">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Margem de Contribuição</span>
-                  <span className="font-bold text-[var(--color-primary)] text-sm">
-                    {selectedQuote.marginPercent}%
-                  </span>
-                </div>
-              </div>
-
               {/* Items Table */}
-              <div className="space-y-2">
-                <h4 className="font-display font-semibold text-xs text-[var(--text-main)]">
-                  Composição de Itens do Orçamento
+              <div className="space-y-3">
+                <h4 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-[var(--color-primary)]" />
+                  Composição de Itens & Insumos Detalhados ({selectedQuote.items.length})
                 </h4>
-                <div className="overflow-x-auto border border-[var(--border-subtle)] rounded-lg">
+
+                <div className="overflow-x-auto border border-[var(--border-subtle)] rounded-xl shadow-xs">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[var(--bg-low)] text-[var(--text-muted)] uppercase text-[10px] border-b border-[var(--border-subtle)]">
+                    <thead className="bg-[var(--bg-low)] text-slate-400 uppercase font-bold text-xs border-b border-[var(--border-subtle)]">
                       <tr>
-                        <th className="p-2.5">Ambiente / Item</th>
-                        <th className="p-2.5">Categoria</th>
-                        <th className="p-2.5">Qtd</th>
-                        <th className="p-2.5">Custo Unit.</th>
-                        <th className="p-2.5">Markup</th>
-                        <th className="p-2.5 text-right">Total Venda</th>
+                        <th className="p-3">Item / Ambiente</th>
+                        <th className="p-3">Categoria</th>
+                        <th className="p-3 text-center">Quantidade</th>
+                        <th className="p-3 text-right">Custo Unit.</th>
+                        <th className="p-3 text-center">Markup</th>
+                        <th className="p-3 text-right">Total de Venda</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[var(--border-subtle)] bg-[var(--bg-container)]">
-                      {selectedQuote.items.map((item) => (
-                        <tr key={item.id} className="hover:bg-[var(--bg-low)]/60">
-                          <td className="p-2.5">
-                            <span className="font-medium text-[var(--text-main)] block">{item.description}</span>
-                            <span className="text-[10px] text-[var(--text-muted)]">{item.roomName}</span>
-                          </td>
-                          <td className="p-2.5">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-high)] text-[var(--color-primary)] font-mono uppercase">
-                              {item.category}
-                            </span>
-                          </td>
-                          <td className="p-2.5 font-mono">
-                            {item.quantity} {item.unit}
-                          </td>
-                          <td className="p-2.5 font-mono text-[var(--text-muted)]">
-                            R$ {item.unitCost.toFixed(2)}
-                          </td>
-                          <td className="p-2.5 font-mono text-[var(--color-primary)]">
-                            {item.markup}x
-                          </td>
-                          <td className="p-2.5 font-mono font-semibold text-right text-[var(--color-secondary)]">
-                            R$ {item.totalPrice.toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
+                      {selectedQuote.items.map((item) => {
+                        const catBadge = getCategoryBadge(item.category);
+                        return (
+                          <tr key={item.id} className="hover:bg-[var(--bg-low)]/70 transition-colors">
+                            <td className="p-3">
+                              <span className="font-bold text-sm text-[var(--text-main)] block leading-snug">
+                                {item.description}
+                              </span>
+                              <span className="text-xs text-slate-400 font-medium">{item.roomName}</span>
+                            </td>
+                            <td className="p-3">
+                              <span
+                                className={`text-xs px-2.5 py-0.5 rounded-md font-bold uppercase ${catBadge.color}`}
+                              >
+                                {catBadge.label}
+                              </span>
+                            </td>
+                            <td className="p-3 font-mono text-center font-semibold text-slate-200">
+                              {item.quantity} {item.unit}
+                            </td>
+                            <td className="p-3 font-mono text-right text-slate-400 font-medium">
+                              R$ {item.unitCost.toFixed(2)}
+                            </td>
+                            <td className="p-3 font-mono text-center text-amber-400 font-bold">
+                              {item.markup}x
+                            </td>
+                            <td className="p-3 font-mono font-bold text-right text-emerald-400 text-sm">
+                              R$ {item.totalPrice.toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </div>
 
               {/* What-If Pricing Simulator */}
-              <div className="bg-[var(--bg-low)] border border-[var(--color-primary)]/30 p-4 rounded-xl space-y-3">
+              <div className="bg-gradient-to-br from-[var(--bg-low)] to-[var(--bg-container)] border border-[var(--color-primary)]/40 p-5 rounded-2xl space-y-4 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-[var(--color-primary)]" />
-                    <h4 className="font-display font-bold text-xs text-[var(--text-main)]">
-                      Simulador "What-if Pricing" (Sem alterar o orçamento base)
-                    </h4>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--bg-high)] flex items-center justify-center text-[var(--color-primary)] border border-[var(--color-primary)]/30">
+                      <Sliders className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-[var(--text-main)]">
+                        Simulador "What-If Pricing"
+                      </h4>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        Simulação em tempo real de desconto ou ágio sem alterar a proposta original.
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-[11px] font-mono text-[var(--color-primary)] font-bold">
-                    {whatIfPriceAdjustment > 0 ? `+${whatIfPriceAdjustment}%` : `${whatIfPriceAdjustment}%`}
+
+                  <span className="text-sm font-mono text-amber-400 font-bold bg-amber-950/80 px-3 py-1 rounded-lg border border-amber-500/30">
+                    Ajuste: {whatIfPriceAdjustment > 0 ? `+${whatIfPriceAdjustment}%` : `${whatIfPriceAdjustment}%`}
                   </span>
                 </div>
-
-                <p className="text-[11px] text-[var(--text-muted)]">
-                  Simule o impacto de concessão de desconto ou aumento de tabela na margem real e no lucro líquido.
-                </p>
 
                 <input
                   type="range"
@@ -454,29 +608,37 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                   step="1"
                   value={whatIfPriceAdjustment}
                   onChange={(e) => setWhatIfPriceAdjustment(Number(e.target.value))}
-                  className="w-full accent-[var(--color-primary)] cursor-pointer"
+                  className="w-full accent-[var(--color-primary)] cursor-pointer h-2 bg-slate-800 rounded-lg"
                 />
 
-                <div className="grid grid-cols-3 gap-3 text-xs pt-2 border-t border-[var(--border-subtle)]">
-                  <div>
-                    <span className="text-[10px] text-[var(--text-muted)] block">Preço Simulado</span>
-                    <span className="font-bold text-[var(--text-main)] font-mono">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2 border-t border-[var(--border-subtle)] text-xs">
+                  <div className="bg-[var(--bg-lowest)] p-3 rounded-xl border border-[var(--border-subtle)]">
+                    <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                      Preço Simulado
+                    </span>
+                    <span className="font-bold text-[var(--text-main)] font-mono text-base block mt-0.5">
                       R$ {simPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-[var(--text-muted)] block">Nova Margem</span>
+
+                  <div className="bg-[var(--bg-lowest)] p-3 rounded-xl border border-[var(--border-subtle)]">
+                    <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                      Nova Margem Efetiva
+                    </span>
                     <span
-                      className={`font-bold font-mono ${
-                        simMargin >= 25 ? 'text-[var(--color-secondary)]' : 'text-[#ffb4ab]'
+                      className={`font-bold font-mono text-base block mt-0.5 ${
+                        simMargin >= 25 ? 'text-emerald-400' : 'text-rose-400'
                       }`}
                     >
                       {simMargin}%
                     </span>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-[var(--text-muted)] block">Novo Lucro Bruto</span>
-                    <span className="font-bold text-[var(--color-primary)] font-mono">
+
+                  <div className="bg-[var(--bg-lowest)] p-3 rounded-xl border border-[var(--border-subtle)]">
+                    <span className="text-xs font-bold text-[var(--text-muted)] block uppercase tracking-wider">
+                      Novo Lucro Bruto
+                    </span>
+                    <span className="font-bold text-amber-400 font-mono text-base block mt-0.5">
                       R$ {simProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -484,8 +646,8 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               </div>
             </div>
           ) : (
-            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-10 text-center text-[var(--text-muted)] text-xs">
-              Selecione um orçamento na lista para visualizar o cálculo detalhado de custos e margem.
+            <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-2xl p-16 text-center text-slate-400 text-sm beveled-card">
+              Selecione um orçamento na lista para visualizar a composição de custos e margem de contribuição.
             </div>
           )}
         </div>
@@ -493,46 +655,57 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
 
       {/* Modal: Add Quote Item */}
       {showAddItemModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-2xl p-6 max-w-lg w-full beveled-card shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-base text-[var(--text-main)] flex items-center gap-2">
+                <Plus className="w-5 h-5 text-[var(--color-primary)]" />
                 Adicionar Item ao Orçamento
               </h3>
-              <button onClick={() => setShowAddItemModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
+              <button
+                onClick={() => setShowAddItemModal(false)}
+                className="text-slate-400 hover:text-slate-200 cursor-pointer text-base"
+              >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAddItem} className="space-y-3">
+            <form onSubmit={handleAddItem} className="space-y-4">
               <div>
-                <label className="text-[11px] text-[var(--text-muted)] block mb-1">Descrição do Item</label>
+                <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                  Descrição do Item / Peça
+                </label>
                 <input
                   required
                   type="text"
-                  placeholder="Ex: Chapa MDF Louro Freijó 18mm"
+                  placeholder="Ex: Chapa MDF Louro Freijó 18mm (Arauco)"
                   value={newItemDesc}
                   onChange={(e) => setNewItemDesc(e.target.value)}
-                  className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                  className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Ambiente</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                    Ambiente do Projeto
+                  </label>
                   <input
                     type="text"
                     value={newItemRoom}
                     onChange={(e) => setNewItemRoom(e.target.value)}
-                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Categoria</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                    Categoria
+                  </label>
                   <select
                     value={newItemCategory}
                     onChange={(e) => setNewItemCategory(e.target.value as any)}
-                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-2 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)] cursor-pointer"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3 py-2 text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)] cursor-pointer"
                   >
                     <option value="mdf">MDF / Chapas</option>
                     <option value="hardware">Ferragens & Corrediças</option>
@@ -544,53 +717,61 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-3 gap-3.5">
                 <div>
-                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Quantidade</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                    Quantidade
+                  </label>
                   <input
                     type="number"
                     min="0.1"
                     step="0.1"
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(Number(e.target.value))}
-                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Custo Unit. (R$)</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                    Custo Unit. (R$)
+                  </label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newItemCost}
                     onChange={(e) => setNewItemCost(Number(e.target.value))}
-                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="text-[11px] text-[var(--text-muted)] block mb-1">Markup (Multiplicador)</label>
+                  <label className="text-xs font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">
+                    Markup Multiplicador
+                  </label>
                   <input
                     type="number"
                     min="1.0"
                     step="0.1"
                     value={newItemMarkup}
                     onChange={(e) => setNewItemMarkup(Number(e.target.value))}
-                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                    className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-2 text-sm text-[var(--text-main)] font-mono focus:outline-none focus:border-[var(--color-primary)]"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border-subtle)]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-subtle)]">
                 <button
                   type="button"
                   onClick={() => setShowAddItemModal(false)}
-                  className="px-3 py-1.5 rounded-lg text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="convex-btn px-4 py-1.5 rounded-lg text-xs font-semibold cursor-pointer"
+                  className="convex-btn px-5 py-2 rounded-xl text-xs font-bold cursor-pointer shadow-md"
                 >
                   Adicionar ao Orçamento
                 </button>
@@ -599,92 +780,100 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
           </div>
         </div>
       )}
+
       {/* Modal: PIX Down Payment (50%) */}
       {showPixModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[var(--bg-container)] border border-[var(--color-secondary)]/40 rounded-xl p-5 max-w-md w-full beveled-card shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
-                <QrCode className="w-4 h-4 text-[var(--color-secondary)]" />
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-[var(--bg-container)] border border-emerald-500/40 rounded-2xl p-6 max-w-md w-full beveled-card shadow-2xl space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
+              <h3 className="font-display font-bold text-base text-[var(--text-main)] flex items-center gap-2">
+                <QrCode className="w-5 h-5 text-emerald-400" />
                 Cobrança PIX — Sinal de Entrada (50%)
               </h3>
-              <button onClick={() => setShowPixModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
+              <button
+                onClick={() => setShowPixModal(false)}
+                className="text-slate-400 hover:text-slate-200 cursor-pointer text-base"
+              >
                 ✕
               </button>
             </div>
 
-            <div className="text-center space-y-3 p-3 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)]">
-              <div className="bg-white p-3 rounded-lg inline-block shadow">
-                <div className="w-36 h-36 border-2 border-black flex flex-col items-center justify-center text-black font-mono text-[9px] p-2 space-y-1">
-                  <QrCode className="w-20 h-20 text-black" />
-                  <span className="font-bold">PIX BANCO DO BRASIL</span>
+            <div className="text-center space-y-4 p-4 bg-[var(--bg-low)] rounded-2xl border border-[var(--border-subtle)]">
+              <div className="bg-white p-4 rounded-xl inline-block shadow-md">
+                <div className="w-40 h-40 border-2 border-slate-900 flex flex-col items-center justify-center text-slate-950 font-mono text-xs p-2 space-y-1">
+                  <QrCode className="w-24 h-24 text-slate-950" />
+                  <span className="font-bold text-xs">PIX BANCO DO BRASIL</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[10px] text-[var(--text-muted)] block">Valor do Sinal (50%)</span>
-                <span className="font-mono font-bold text-lg text-[var(--color-secondary)]">
+                <span className="text-xs text-[var(--text-muted)] block font-medium">Valor do Sinal de Entrada (50%)</span>
+                <span className="font-mono font-bold text-2xl text-emerald-400 block mt-0.5">
                   R$ {(selectedQuote.totalPrice * 0.5).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="text-[10px] text-[var(--text-muted)] block mt-0.5">
-                  Beneficiário: WoodBit Marcenaria & CNC Ltda (Natividade - RJ)
+                <span className="text-xs text-[var(--text-faint)] block mt-1">
+                  Favorecido: WoodBit Marcenaria & Fabricação Digital Ltda (Natividade - RJ)
                 </span>
               </div>
 
-              {/* Copy Key */}
-              <div className="flex items-center gap-2 bg-[var(--bg-high)] p-2 rounded-lg border border-[var(--border-subtle)] text-xs">
-                <span className="font-mono text-[10px] text-[var(--color-primary)] truncate flex-1 text-left">
+              {/* Copy PIX String */}
+              <div className="flex items-center gap-2 bg-[var(--bg-high)] p-2.5 rounded-xl border border-[var(--border-subtle)] text-xs">
+                <span className="font-mono text-xs text-amber-300 truncate flex-1 text-left">
                   00020126360014BR.GOV.BCB.PIX0114000000000000005204000053039865802BR
                 </span>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText('00020126360014BR.GOV.BCB.PIX0114000000000000005204000053039865802BR');
+                    navigator.clipboard.writeText(
+                      '00020126360014BR.GOV.BCB.PIX0114000000000000005204000053039865802BR'
+                    );
                     setCopiedPix(true);
                     setTimeout(() => setCopiedPix(false), 2000);
                   }}
-                  className="px-2 py-1 rounded bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-amber-400 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-amber-500/30 transition"
                 >
-                  {copiedPix ? <Check className="w-3 h-3 text-[var(--color-secondary)]" /> : <Copy className="w-3 h-3" />}
+                  {copiedPix ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedPix ? 'Copiado!' : 'Copiar'}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center justify-between pt-2">
               <button
                 onClick={() => setShowPixModal(false)}
-                className="px-3 py-1.5 rounded-lg bg-[var(--bg-low)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[var(--bg-low)] text-xs text-slate-300 hover:text-white cursor-pointer font-semibold"
               >
                 Fechar
               </button>
               <button
                 onClick={handleConfirmPixPayment}
-                className="convex-btn px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow"
+                className="convex-btn px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Confirmar Pagamento do Sinal
+                <CheckCircle2 className="w-4 h-4" /> Confirmar Pagamento do Sinal
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal: Digital Contract & Signatures */}
+      {/* Modal: Digital Contract & Legal Terms */}
       {showContractModal && selectedQuote && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
-          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in">
+          <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-2xl p-6 max-w-2xl w-full beveled-card shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[var(--border-subtle)]">
-              <h3 className="font-display font-bold text-sm text-[var(--text-main)] flex items-center gap-2">
-                <FileCheck className="w-4 h-4 text-[var(--color-primary)]" />
-                Minuta de Contrato de Prestação de Serviços & Manufatura Digital
+              <h3 className="font-display font-bold text-base text-[var(--text-main)] flex items-center gap-2">
+                <FileCheck className="w-5 h-5 text-[var(--color-primary)]" />
+                Minuta de Contrato de Prestação de Serviços & Fabricação Sob Medida
               </h3>
-              <button onClick={() => setShowContractModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer">
+              <button
+                onClick={() => setShowContractModal(false)}
+                className="text-slate-400 hover:text-slate-200 cursor-pointer text-base"
+              >
                 ✕
               </button>
             </div>
 
-            {/* Contract Body Document */}
-            <div className="p-4 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] text-xs text-[var(--text-main)] space-y-3 font-serif leading-relaxed">
-              <p className="font-bold text-[var(--text-main)] font-sans text-center uppercase tracking-wider text-[11px]">
+            <div className="p-5 bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] text-xs text-slate-200 space-y-3 font-serif leading-relaxed">
+              <p className="font-bold text-slate-100 font-sans text-center uppercase tracking-wider text-xs">
                 INSTRUMENTO PARTICULAR DE FABRICAÇÃO E INSTALAÇÃO DE MOBILIÁRIO SOB MEDIDA
               </p>
 
@@ -695,41 +884,44 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                 <strong>CONTRATANTE:</strong> {selectedQuote.customerName.toUpperCase()}.
               </p>
               <p>
-                <strong>CLÁUSULA 1ª (DO OBJETO):</strong> A CONTRATADA compromete-se a fabricar sob medida e instalar o projeto <em>"{selectedQuote.projectTitle}"</em>, em estrita conformidade com o projeto técnico aprovado e memorial de materiais.
+                <strong>CLÁUSULA 1ª (DO OBJETO):</strong> A CONTRATADA compromete-se a fabricar sob medida e instalar o projeto{' '}
+                <em>"{selectedQuote.projectTitle}"</em>, em estrita conformidade com o projeto técnico aprovado e memorial de materiais.
               </p>
               <p>
-                <strong>CLÁUSULA 2ª (DO VALOR E PAGAMENTO):</strong> O valor total ajustado é de <strong>R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>, sendo 50% de sinal de entrada via PIX e o restante na conclusão da montagem.
+                <strong>CLÁUSULA 2ª (DO VALOR E PAGAMENTO):</strong> O valor total ajustado é de{' '}
+                <strong>R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>, sendo 50% de sinal de entrada via PIX e o restante na conclusão da montagem.
               </p>
               <p>
-                <strong>CLÁUSULA 3ª (DO PRAZO E TOLERÂNCIAS):</strong> Prazo estimado de produção de {selectedQuote.estimatedProductionDays} dias úteis contados a partir da aprovação da visita técnica de medição presencial.
+                <strong>CLÁUSULA 3ª (DO PRAZO E TOLERÂNCIAS):</strong> Prazo estimado de produção de{' '}
+                {selectedQuote.estimatedProductionDays} dias úteis contados a partir da aprovação da visita técnica de medição presencial.
               </p>
               <p>
                 <strong>CLÁUSULA 4ª (DA GARANTIA):</strong> Garantia de 5 (cinco) anos para ferragens com amortecimento e 1 (um) ano para alinhamento e estrutura em MDF. Foro da Comarca de Natividade - RJ.
               </p>
 
               <div className="pt-3 border-t border-[var(--border-subtle)] grid grid-cols-2 gap-4 text-center font-sans">
-                <div className="p-2 border border-dashed border-[var(--color-primary)]/40 rounded bg-[var(--bg-container)]">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Assinado Digitalmente por:</span>
-                  <strong className="text-xs text-[var(--color-primary)] block mt-1">WoodBit Marcenaria (Carlos)</strong>
-                  <span className="text-[9px] font-mono text-[var(--color-secondary)]">Hash: 8f4a-99e2-2026</span>
+                <div className="p-3 border border-dashed border-[var(--color-primary)]/40 rounded-xl bg-[var(--bg-container)]">
+                  <span className="text-xs text-slate-400 block font-medium">Assinado Digitalmente por:</span>
+                  <strong className="text-xs text-amber-400 block mt-1 font-bold">WoodBit Marcenaria (Carlos)</strong>
+                  <span className="text-xs font-mono text-emerald-400">Hash: 8f4a-99e2-2026</span>
                 </div>
-                <div className="p-2 border border-dashed border-[var(--border-subtle)] rounded bg-[var(--bg-container)]">
-                  <span className="text-[10px] text-[var(--text-muted)] block">Aguardando Assinatura de:</span>
-                  <strong className="text-xs text-[var(--text-main)] block mt-1">{selectedQuote.customerName}</strong>
-                  <span className="text-[9px] font-mono text-[var(--text-muted)]">Via Link do WhatsApp</span>
+                <div className="p-3 border border-dashed border-[var(--border-subtle)] rounded-xl bg-[var(--bg-container)]">
+                  <span className="text-xs text-slate-400 block font-medium">Aguardando Assinatura de:</span>
+                  <strong className="text-xs text-slate-200 block mt-1 font-bold">{selectedQuote.customerName}</strong>
+                  <span className="text-xs font-mono text-slate-400">Via Link WhatsApp</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-[var(--text-muted)]">
-                Contrato validado juridicamente segundo o Código Civil Brasileiro
+              <span className="text-xs text-slate-400 font-medium">
+                Contrato em conformidade com o Código Civil Brasileiro e LGPD.
               </span>
               <button
                 onClick={handleSendContract}
-                className="convex-btn px-5 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow"
+                className="convex-btn px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
               >
-                <Send className="w-3.5 h-3.5" /> Enviar para Assinatura Eletrônica
+                <Send className="w-4 h-4" /> Enviar para Assinatura Eletrônica
               </button>
             </div>
           </div>
