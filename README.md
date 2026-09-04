@@ -25,6 +25,10 @@ Projetado estrategicamente para a realidade de marcenarias modernas e focado na 
 ## ⚡ Diferenciais Competitivos ("Por que o WoodBit?")
 
 - 🔒 **Privacidade Absoluta (Zero Cloud Leak)**: Fotos de quartos, cozinhas residenciais e dados de clientes são processados **100% offline na GPU da oficina**, sem envio para servidores de terceiros.
+- 👁️ **Visão Computacional na Medição Técnica**: Captura e upload de fotos da obra pelo celular com detecção automatizada de interferências construtivas (canos de água/gás, tomadas fora de centro, vigas e desaprumo) pelo modelo local **Gemma 4 12B QAT Vision**.
+- 🖨️ **Upload de Arquivos 3D Reais (.STL / .OBJ) com Cálculo de Métricas**: Suporte a arrastar e soltar arquivos 3D com renderização interativa Three.js, cálculo exato de volume geométrico por tetraedros, peso em gramas (PETG/PLA), tempo estimado de impressão e custo de filamento.
+- 📄 **Emissão de Proposta Comercial em PDF Imprimível**: Geração de propostas executivas no padrão folha A4 com memorial descritivo por ambiente, condições de pagamento (sinal PIX 50% e entrega 50%), termos de garantia de 5 anos Blum/Häfele e impressão direta limpa via `@media print`.
+- 📦 **Baixa Automática e Reserva de Estoque Integrada ao PCP**: Sincronização entre chão de fábrica e almoxarifado — reserva automática de chapas de MDF, filamentos e ferragens ao iniciar OPs e baixa definitiva ao concluir a montagem.
 - 💾 **Persistência em Banco Real SQLite Nativo (`node:sqlite`)**: Banco de dados relacional embarcado com modo WAL em `.data/woodbit.sqlite`. Arquitetura híbrida com sincronização offline e fila de mutações para trabalho em campo.
 - 🧊 **Visualizador 3D Interativo WebGL (Three.js)**: Renderização tridimensional em tempo real para o configurador paramétrico (Mesa Gamer, Suporte 3D PETG) e simulação cinemática 3D de percurso de ferramenta CNC (*Toolpaths* multi-passo).
 - 📱 **PWA Offline-First para o Marceneiro de Campo**: Aplicativo web progressivo instalável no celular/tablet do marceneiro para conferência in loco com trena e esquadro a laser, armazenando fotos e laudos offline com sincronização automática ao retornar ao Wi-Fi da oficina.

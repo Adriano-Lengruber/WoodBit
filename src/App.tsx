@@ -266,6 +266,8 @@ function AppContent() {
               onSelectCity={setSelectedCity}
               onUpdateOrders={setProductionOrders}
               onUpdateMachines={setMachines}
+              inventory={inventory}
+              onUpdateInventory={setInventory}
             />
           )}
 

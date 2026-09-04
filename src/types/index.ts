@@ -254,6 +254,7 @@ export interface ProductionOrder {
     size: string;
   }[];
   materialsReserved: boolean;
+  materialsDeducted?: boolean;
   qualityPassed: boolean;
   nonConformityNotes?: string;
 }

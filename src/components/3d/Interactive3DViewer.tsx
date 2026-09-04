@@ -11,10 +11,27 @@ import {
   Sparkles,
   Box,
   RotateCcw,
-  Sliders
+  Sliders,
+  Upload,
+  FileCode,
+  Check,
+  Info,
+  Printer
 } from 'lucide-react';
 
-export type ModelType = 'gamer_desk' | 'printed_stand' | 'cnc_relief' | 'toolpath_wireframe';
+export type ModelType = 'gamer_desk' | 'printed_stand' | 'cnc_relief' | 'toolpath_wireframe' | 'custom_upload';
+
+export interface Custom3DStats {
+  fileName: string;
+  widthMm: number;
+  heightMm: number;
+  depthMm: number;
+  volumeCm3: number;
+  weightGrams: number;
+  printTimeMinutes: number;
+  materialCost: number;
+  triangleCount: number;
+}
 
 interface Interactive3DViewerProps {
   initialModel?: ModelType;
@@ -35,6 +52,9 @@ export const Interactive3DViewer: React.FC<Interactive3DViewerProps> = ({
   const [isWireframe, setIsWireframe] = useState<boolean>(false);
   const [isRotating, setIsRotating] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [isDraggingFile, setIsDraggingFile] = useState<boolean>(false);
+  const [customGeometry, setCustomGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [customStats, setCustomStats] = useState<Custom3DStats | null>(null);
 
   // References to keep Three.js instances
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -42,10 +62,206 @@ export const Interactive3DViewer: React.FC<Interactive3DViewerProps> = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const currentMeshGroupRef = useRef<THREE.Group | null>(null);
   const frameIdRef = useRef<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mouse interaction state
   const isDraggingRef = useRef<boolean>(false);
   const previousMousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Native STL Parser (Binary & ASCII)
+  const parseSTL = (buffer: ArrayBuffer): { geometry: THREE.BufferGeometry; volumeCm3: number; triangleCount: number } => {
+    const isBinary = () => {
+      if (buffer.byteLength < 84) return false;
+      const reader = new DataView(buffer);
+      const triangles = reader.getUint32(80, true);
+      const expectedSize = 84 + triangles * 50;
+      return expectedSize === buffer.byteLength;
+    };
+
+    const geometry = new THREE.BufferGeometry();
+    let volume = 0;
+
+    if (isBinary()) {
+      const reader = new DataView(buffer);
+      const triangles = reader.getUint32(80, true);
+      const positions = new Float32Array(triangles * 9);
+      let offset = 84;
+
+      for (let i = 0; i < triangles; i++) {
+        offset += 12; // skip normal
+        const x1 = reader.getFloat32(offset, true); offset += 4;
+        const y1 = reader.getFloat32(offset, true); offset += 4;
+        const z1 = reader.getFloat32(offset, true); offset += 4;
+        const x2 = reader.getFloat32(offset, true); offset += 4;
+        const y2 = reader.getFloat32(offset, true); offset += 4;
+        const z2 = reader.getFloat32(offset, true); offset += 4;
+        const x3 = reader.getFloat32(offset, true); offset += 4;
+        const y3 = reader.getFloat32(offset, true); offset += 4;
+        const z3 = reader.getFloat32(offset, true); offset += 4;
+        offset += 2; // skip attributes
+
+        const idx = i * 9;
+        positions[idx] = x1; positions[idx + 1] = y1; positions[idx + 2] = z1;
+        positions[idx + 3] = x2; positions[idx + 4] = y2; positions[idx + 5] = z2;
+        positions[idx + 6] = x3; positions[idx + 7] = y3; positions[idx + 8] = z3;
+
+        // Signed tetrahedron volume
+        const crossX = y2 * z3 - z2 * y3;
+        const crossY = z2 * x3 - x2 * z3;
+        const crossZ = x2 * y3 - y2 * x3;
+        volume += (x1 * crossX + y1 * crossY + z1 * crossZ) / 6.0;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+      return { geometry, volumeCm3: Math.abs(volume) / 1000.0, triangleCount: triangles };
+    } else {
+      const text = new TextDecoder().decode(buffer);
+      const vertexMatches = [...text.matchAll(/vertex\s+([-\d.eE]+)\s+([-\d.eE]+)\s+([-\d.eE]+)/g)];
+      const triangles = Math.floor(vertexMatches.length / 3);
+      const positions = new Float32Array(triangles * 9);
+
+      for (let i = 0; i < triangles; i++) {
+        const v1 = [parseFloat(vertexMatches[i * 3][1]), parseFloat(vertexMatches[i * 3][2]), parseFloat(vertexMatches[i * 3][3])];
+        const v2 = [parseFloat(vertexMatches[i * 3 + 1][1]), parseFloat(vertexMatches[i * 3 + 1][2]), parseFloat(vertexMatches[i * 3 + 1][3])];
+        const v3 = [parseFloat(vertexMatches[i * 3 + 2][1]), parseFloat(vertexMatches[i * 3 + 2][2]), parseFloat(vertexMatches[i * 3 + 2][3])];
+
+        const idx = i * 9;
+        positions[idx] = v1[0]; positions[idx + 1] = v1[1]; positions[idx + 2] = v1[2];
+        positions[idx + 3] = v2[0]; positions[idx + 4] = v2[1]; positions[idx + 5] = v2[2];
+        positions[idx + 6] = v3[0]; positions[idx + 7] = v3[1]; positions[idx + 8] = v3[2];
+
+        const crossX = v2[1] * v3[2] - v2[2] * v3[1];
+        const crossY = v2[2] * v3[0] - v2[0] * v3[2];
+        const crossZ = v2[0] * v3[1] - v2[1] * v3[0];
+        volume += (v1[0] * crossX + v1[1] * crossY + v1[2] * crossZ) / 6.0;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+      return { geometry, volumeCm3: Math.abs(volume) / 1000.0, triangleCount: triangles };
+    }
+  };
+
+  // Native Wavefront OBJ Parser
+  const parseOBJ = (text: string): { geometry: THREE.BufferGeometry; triangleCount: number } => {
+    const vertices: number[][] = [];
+    const positions: number[] = [];
+    const lines = text.split('\n');
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('v ')) {
+        const parts = trimmed.split(/\s+/).slice(1).map(Number);
+        vertices.push(parts);
+      } else if (trimmed.startsWith('f ')) {
+        const parts = trimmed.split(/\s+/).slice(1);
+        const faceIndices = parts.map((p) => {
+          const vIdx = parseInt(p.split('/')[0], 10);
+          return vIdx < 0 ? vertices.length + vIdx : vIdx - 1;
+        });
+
+        for (let i = 1; i < faceIndices.length - 1; i++) {
+          const v0 = vertices[faceIndices[0]];
+          const v1 = vertices[faceIndices[i]];
+          const v2 = vertices[faceIndices[i + 1]];
+          if (v0 && v1 && v2) {
+            positions.push(...v0, ...v1, ...v2);
+          }
+        }
+      }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.computeVertexNormals();
+    return { geometry, triangleCount: positions.length / 9 };
+  };
+
+  const handleFileSelect = (file: File) => {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    const reader = new FileReader();
+
+    if (extension === 'stl') {
+      reader.onload = (e) => {
+        const buffer = e.target?.result as ArrayBuffer;
+        if (!buffer) return;
+        const parsed = parseSTL(buffer);
+
+        parsed.geometry.computeBoundingBox();
+        const box = parsed.geometry.boundingBox!;
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        parsed.geometry.center();
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 12 / maxDim : 1;
+        parsed.geometry.scale(scale, scale, scale);
+
+        const widthMm = Math.round(size.x);
+        const heightMm = Math.round(size.y);
+        const depthMm = Math.round(size.z);
+        const volumeCm3 = parseFloat(parsed.volumeCm3.toFixed(1));
+        const weightGrams = Math.max(1, Math.round(volumeCm3 * 1.25 * 0.35));
+        const printTimeMinutes = Math.max(15, Math.round(weightGrams * 2.2));
+        const materialCost = parseFloat((weightGrams * 0.12).toFixed(2));
+
+        setCustomGeometry(parsed.geometry);
+        setCustomStats({
+          fileName: file.name,
+          widthMm,
+          heightMm,
+          depthMm,
+          volumeCm3,
+          weightGrams,
+          printTimeMinutes,
+          materialCost,
+          triangleCount: parsed.triangleCount,
+        });
+        setModelType('custom_upload');
+      };
+      reader.readAsArrayBuffer(file);
+    } else if (extension === 'obj') {
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        if (!text) return;
+        const parsed = parseOBJ(text);
+
+        parsed.geometry.computeBoundingBox();
+        const box = parsed.geometry.boundingBox!;
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        parsed.geometry.center();
+
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = maxDim > 0 ? 12 / maxDim : 1;
+        parsed.geometry.scale(scale, scale, scale);
+
+        const widthMm = Math.round(size.x);
+        const heightMm = Math.round(size.y);
+        const depthMm = Math.round(size.z);
+        const volumeCm3 = Math.round((widthMm * heightMm * depthMm * 0.4) / 1000);
+        const weightGrams = Math.max(1, Math.round(volumeCm3 * 1.25 * 0.35));
+        const printTimeMinutes = Math.max(15, Math.round(weightGrams * 2.2));
+        const materialCost = parseFloat((weightGrams * 0.12).toFixed(2));
+
+        setCustomGeometry(parsed.geometry);
+        setCustomStats({
+          fileName: file.name,
+          widthMm,
+          heightMm,
+          depthMm,
+          volumeCm3,
+          weightGrams,
+          printTimeMinutes,
+          materialCost,
+          triangleCount: parsed.triangleCount,
+        });
+        setModelType('custom_upload');
+      };
+      reader.readAsText(file);
+    }
+  };
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -298,10 +514,15 @@ export const Interactive3DViewer: React.FC<Interactive3DViewerProps> = ({
       const bit = new THREE.Mesh(bitGeo, bitMat);
       bit.position.set(points[points.length - 1].x, points[points.length - 1].y + 1.5, points[points.length - 1].z);
       group.add(bit);
+    } else if (modelType === 'custom_upload' && customGeometry) {
+      const customMesh = new THREE.Mesh(customGeometry, woodMaterial);
+      customMesh.castShadow = true;
+      customMesh.receiveShadow = true;
+      group.add(customMesh);
     }
 
     sceneRef.current.add(group);
-  }, [modelType, materialFinish, isWireframe]);
+  }, [modelType, materialFinish, isWireframe, customGeometry]);
 
   // Handle Mouse Drag for 3D Orbit
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -361,16 +582,52 @@ export const Interactive3DViewer: React.FC<Interactive3DViewerProps> = ({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         onWheel={handleWheel}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDraggingFile(true);
+        }}
+        onDragLeave={() => setIsDraggingFile(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDraggingFile(false);
+          const f = e.dataTransfer.files[0];
+          if (f) handleFileSelect(f);
+        }}
       />
 
+      {/* Hidden File Input for STL / OBJ */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".stl,.obj"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleFileSelect(f);
+        }}
+        className="hidden"
+      />
+
+      {/* Drag & Drop Visual Overlay */}
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-30 bg-[#161311]/90 backdrop-blur-sm border-2 border-dashed border-[var(--color-primary)] flex flex-col items-center justify-center pointer-events-none animate-in fade-in">
+          <Upload className="w-12 h-12 text-[var(--color-primary)] animate-bounce mb-3" />
+          <span className="font-display font-bold text-lg text-[var(--text-main)]">
+            Solte o arquivo 3D aqui
+          </span>
+          <span className="text-xs text-[var(--text-muted)] font-mono mt-1">
+            Formatos suportados: .STL (binário/ASCII) e .OBJ
+          </span>
+        </div>
+      )}
+
       {/* Top Overlay Badge & Model Switcher */}
-      <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10">
+      <div className="absolute top-3.5 left-3.5 flex items-center gap-2 z-10 flex-wrap">
         <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--bg-container)]/90 backdrop-blur-md text-[var(--color-primary)] font-mono font-bold border border-[var(--color-primary)]/40 flex items-center gap-1.5 shadow-md">
           <Rotate3d className="w-3.5 h-3.5 text-[var(--color-primary)]" />
           WebGL 3D Engine • Three.js
         </span>
 
-        <div className="flex bg-[var(--bg-container)]/90 backdrop-blur-md rounded-xl p-0.5 border border-[var(--border-subtle)] text-xs">
+        <div className="flex bg-[var(--bg-container)]/90 backdrop-blur-md rounded-xl p-0.5 border border-[var(--border-subtle)] text-xs flex-wrap">
           <button
             onClick={() => setModelType('gamer_desk')}
             className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
@@ -411,8 +668,69 @@ export const Interactive3DViewer: React.FC<Interactive3DViewerProps> = ({
           >
             Trajetória CAM Z
           </button>
+
+          {customStats && (
+            <button
+              onClick={() => setModelType('custom_upload')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer flex items-center gap-1 ${
+                modelType === 'custom_upload'
+                  ? 'bg-[#14381b] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40 font-bold'
+                  : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+              }`}
+            >
+              <FileCode className="w-3 h-3" />
+              {customStats.fileName.slice(0, 12)}...
+            </button>
+          )}
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="px-2.5 py-1 rounded-lg font-bold transition cursor-pointer text-[var(--color-primary)] hover:bg-[var(--bg-high)] flex items-center gap-1"
+            title="Importar arquivo .STL ou .OBJ do seu computador"
+          >
+            <Upload className="w-3 h-3" />
+            Carregar 3D
+          </button>
         </div>
       </div>
+
+      {/* Custom Model Physical Metrics Floating Panel */}
+      {modelType === 'custom_upload' && customStats && (
+        <div className="absolute top-14 left-3.5 z-10 bg-[var(--bg-container)]/95 backdrop-blur-md border border-[var(--color-secondary)]/40 rounded-xl p-3 shadow-xl max-w-xs text-xs space-y-1.5 animate-in fade-in">
+          <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-1.5">
+            <span className="font-bold text-[var(--text-main)] truncate max-w-[170px]" title={customStats.fileName}>
+              {customStats.fileName}
+            </span>
+            <span className="text-[10px] font-mono text-[var(--color-secondary)] font-bold">
+              {customStats.triangleCount.toLocaleString()} triângulos
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
+            <div>
+              <span className="text-[var(--text-muted)] block text-[10px]">Dimensões:</span>
+              <strong className="text-[var(--text-main)]">{customStats.widthMm}×{customStats.heightMm}×{customStats.depthMm} mm</strong>
+            </div>
+            <div>
+              <span className="text-[var(--text-muted)] block text-[10px]">Volume da Peça:</span>
+              <strong className="text-[var(--text-main)]">{customStats.volumeCm3} cm³</strong>
+            </div>
+            <div>
+              <span className="text-[var(--text-muted)] block text-[10px]">Peso Filamento (30%):</span>
+              <strong className="text-[var(--color-secondary)]">{customStats.weightGrams}g</strong>
+            </div>
+            <div>
+              <span className="text-[var(--text-muted)] block text-[10px]">Custo Estimado Matéria:</span>
+              <strong className="text-[var(--color-primary)]">R$ {customStats.materialCost.toFixed(2)}</strong>
+            </div>
+          </div>
+
+          <div className="text-[10px] font-mono text-[var(--text-muted)] pt-1 border-t border-[var(--border-subtle)] flex items-center justify-between">
+            <span>Impressão Bambu Lab:</span>
+            <strong className="text-[var(--text-main)]">~{Math.floor(customStats.printTimeMinutes / 60)}h {customStats.printTimeMinutes % 60}m</strong>
+          </div>
+        </div>
+      )}
 
       {/* Top Right Quick Actions */}
       <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 z-10">

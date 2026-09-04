@@ -25,6 +25,20 @@ import { Project } from '../../types';
 import { useToast } from '../../context/ToastContext';
 import { getOfflineQueueCount, flushOfflineSyncQueue } from '../../services/storage';
 
+interface FieldPhoto {
+  id: string;
+  label: string;
+  url?: string;
+  isAiAnalyzed?: boolean;
+  aiAnalysis?: {
+    identifiedRoom?: string;
+    detectedElements?: string[];
+    suggestedObstacles?: string[];
+    designSuggestions?: string[];
+    legalDisclaimer?: string;
+  };
+}
+
 interface FieldVisitViewProps {
   projects: Project[];
   selectedCity?: string;
@@ -62,13 +76,14 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
   const [obsText, setObsText] = useState(
     'Ponto de tomada 220V do forno localizado a 1150mm do piso acabado. Prumo da parede da pia com desvio de 3mm corrigido no recuo compensador do módulo.'
   );
-  const [photos, setPhotos] = useState<string[]>([
-    'Parede da Pia — Prumo Laser Alinhado',
-    'Ponto 220V Forno Embutido',
-    'Sanca de Gesso & Pé-Direito 2650mm',
-    'Acesso Elevador de Carga / Escada',
+  const [photos, setPhotos] = useState<FieldPhoto[]>([
+    { id: 'p1', label: 'Parede da Pia — Prumo Laser Alinhado' },
+    { id: 'p2', label: 'Ponto 220V Forno Embutido' },
+    { id: 'p3', label: 'Sanca de Gesso & Pé-Direito 2650mm' },
+    { id: 'p4', label: 'Acesso Elevador de Carga / Escada' },
   ]);
   const [newPhotoLabel, setNewPhotoLabel] = useState('');
+  const [analyzingPhotoId, setAnalyzingPhotoId] = useState<string | null>(null);
   const [validationSuccess, setValidationSuccess] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [queueCount, setQueueCount] = useState(getOfflineQueueCount());
@@ -118,16 +133,89 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
 
   const handleAddPhoto = () => {
     if (!newPhotoLabel.trim()) return;
-    const added = newPhotoLabel.trim();
+    const added: FieldPhoto = {
+      id: `p-${Date.now()}`,
+      label: newPhotoLabel.trim(),
+    };
     setPhotos([...photos, added]);
     setNewPhotoLabel('');
-    showToast('Registro Fotográfico Anexado!', `"${added}" adicionado ao laudo.`, 'success');
+    showToast('Registro Fotográfico Anexado!', `"${added.label}" adicionado ao laudo.`, 'success');
   };
 
-  const handleRemovePhoto = (idx: number) => {
-    const removed = photos[idx];
-    setPhotos(photos.filter((_, i) => i !== idx));
-    showToast('Foto Removida', `"${removed}" removido do laudo.`, 'info');
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const newPhoto: FieldPhoto = {
+        id: `p-${Date.now()}`,
+        label: file.name.replace(/\.[^/.]+$/, '') || 'Foto da Obra',
+        url: result,
+      };
+      setPhotos([...photos, newPhoto]);
+      showToast('Foto Carregada!', 'Arquivo anexado com sucesso. Você pode analisá-la com a IA de Visão.', 'success');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleAnalyzeWithVision = async (photo: FieldPhoto) => {
+    if (!photo.url) {
+      showToast('Sem Imagem', 'Anexe uma foto real para analisar com o modelo de visão.', 'info');
+      return;
+    }
+
+    setAnalyzingPhotoId(photo.id);
+    try {
+      const res = await fetch('/api/ai/vision-analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: photo.url,
+          promptText: `Analise a foto técnica de medição "${photo.label}" do projeto ${selectedProject?.title || ''}. Identifique obstáculos, prumo, tomadas e hidráulica.`,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.analysis) {
+        setPhotos((prev) =>
+          prev.map((p) =>
+            p.id === photo.id
+              ? {
+                  ...p,
+                  isAiAnalyzed: true,
+                  aiAnalysis: data.analysis,
+                }
+              : p
+          )
+        );
+        showToast('Análise Concluída!', 'Gemma 4 12B Vision identificou elementos e interferências na foto.', 'success');
+      } else {
+        showToast('Aviso', 'Não foi possível extrair dados visuais da foto.', 'warning');
+      }
+    } catch (e: any) {
+      showToast('Erro de Conexão', e.message || 'Falha ao conectar com o serviço de visão local.', 'warning');
+    } finally {
+      setAnalyzingPhotoId(null);
+    }
+  };
+
+  const handleApplyVisionToObservations = (photo: FieldPhoto) => {
+    if (!photo.aiAnalysis) return;
+    const obstacles = photo.aiAnalysis.suggestedObstacles?.join(', ') || '';
+    const elements = photo.aiAnalysis.detectedElements?.join(', ') || '';
+    const addition = `\n[Laudo IA Visão - ${photo.label}]: Elementos detectados: ${elements}. Obstáculos/Restrições: ${obstacles}. (${photo.aiAnalysis.legalDisclaimer || 'Estimativa visual'})`;
+
+    setObsText((prev) => `${prev.trim()}${addition}`);
+    showToast('Incorporado ao Laudo!', 'Constatações da IA adicionadas às observações técnicas.', 'success');
+  };
+
+  const handleRemovePhoto = (id: string) => {
+    const photo = photos.find((p) => p.id === id);
+    setPhotos(photos.filter((p) => p.id !== id));
+    showToast('Foto Removida', `"${photo?.label || 'Item'}" removido do laudo.`, 'info');
   };
 
   const handleValidatePackage = () => {
@@ -190,7 +278,7 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
     laudo += `[X] 6. Registro Fotográfico (${photos.length} fotos anexadas)\n\n`;
     laudo += `FOTOS REGISTRADAS:\n`;
     photos.forEach((f, i) => {
-      laudo += `  - Foto #${i + 1}: ${f}\n`;
+      laudo += `  - Foto #${i + 1}: ${f.label}${f.isAiAnalyzed ? ' [Analisada por IA Gemma 4 Vision]' : ''}\n`;
     });
     laudo += `\nOBSERVAÇÕES TÉCNICAS:\n${obsText}\n\n`;
     laudo += `TERMO DE LIBERAÇÃO:\nMedidas conferidas no local com instrumentos aferidos. Liberado para corte CNC e montagem.\n`;
@@ -435,48 +523,132 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
               <span className="text-xs text-slate-400 font-mono">Resolução alta / Nuvem WoodBit</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {photos.map((photo, idx) => (
                 <div
-                  key={idx}
-                  className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl p-3 text-xs flex flex-col justify-between group hover:border-[var(--color-primary)]/50 transition-all shadow-xs"
+                  key={photo.id}
+                  className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-2xl p-3.5 text-xs flex flex-col justify-between group hover:border-[var(--color-primary)]/50 transition-all shadow-xs space-y-3"
                 >
-                  <div>
-                    <div className="flex items-center gap-1.5 text-amber-400 mb-1.5">
-                      <ImageIcon className="w-4 h-4" />
-                      <span className="font-mono text-xs font-bold">Foto #{idx + 1}</span>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-amber-400">
+                        <ImageIcon className="w-4 h-4" />
+                        <span className="font-mono text-xs font-bold">Foto #{idx + 1}</span>
+                      </div>
+                      {photo.isAiAnalyzed ? (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-950/80 text-purple-300 border border-purple-500/40 font-bold flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-purple-400" /> Gemma 4 Vision
+                        </span>
+                      ) : null}
                     </div>
-                    <span className="text-xs text-slate-200 font-medium leading-relaxed block">
-                      {photo}
+
+                    {photo.url ? (
+                      <div className="relative h-36 rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-black/40">
+                        <img
+                          src={photo.url}
+                          alt={photo.label}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-16 rounded-xl border border-dashed border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] bg-[var(--bg-container)]/40">
+                        <span className="text-[11px] font-mono">Registro conceitual / Sem imagem</span>
+                      </div>
+                    )}
+
+                    <span className="text-xs text-[var(--text-main)] font-semibold leading-relaxed block">
+                      {photo.label}
                     </span>
+
+                    {/* AI Vision Insights Box */}
+                    {photo.aiAnalysis && (
+                      <div className="p-2.5 rounded-xl bg-[var(--bg-container)] border border-purple-500/30 text-[11px] space-y-1.5 animate-in fade-in">
+                        <div className="text-purple-300 font-bold flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" /> Obstáculos Detectados:
+                        </div>
+                        <ul className="list-disc list-inside text-[var(--text-muted)] space-y-0.5">
+                          {photo.aiAnalysis.suggestedObstacles?.map((obs, oIdx) => (
+                            <li key={oIdx} className="leading-tight">{obs}</li>
+                          ))}
+                        </ul>
+                        <div className="text-[10px] text-amber-300/80 italic font-mono pt-1">
+                          {photo.aiAnalysis.legalDisclaimer}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleApplyVisionToObservations(photo)}
+                          className="w-full mt-1.5 py-1 px-2 rounded-lg bg-purple-900/40 hover:bg-purple-900/70 text-purple-200 border border-purple-500/30 text-[10px] font-bold transition cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <Check className="w-3 h-3" /> Incorporar ao Laudo
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  <button
-                    onClick={() => handleRemovePhoto(idx)}
-                    className="mt-3 text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer font-semibold opacity-80 hover:opacity-100 transition"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" /> Remover
-                  </button>
+                  <div className="flex items-center justify-between pt-2 border-t border-[var(--border-subtle)] gap-2">
+                    {photo.url ? (
+                      <button
+                        type="button"
+                        disabled={analyzingPhotoId === photo.id}
+                        onClick={() => handleAnalyzeWithVision(photo)}
+                        className="text-[11px] text-purple-400 hover:text-purple-300 flex items-center gap-1 cursor-pointer font-bold disabled:opacity-50 transition"
+                      >
+                        <Sparkles className={`w-3.5 h-3.5 ${analyzingPhotoId === photo.id ? 'animate-spin' : ''}`} />
+                        {analyzingPhotoId === photo.id ? 'Analisando...' : photo.isAiAnalyzed ? 'Reanalisar IA' : 'Analisar com IA'}
+                      </button>
+                    ) : (
+                      <span className="text-[10px] text-[var(--text-muted)]">Suba imagem p/ analisar</span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(photo.id)}
+                      className="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer font-semibold opacity-80 hover:opacity-100 transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Excluir
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Add Photo Input */}
-            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
-              <input
-                type="text"
-                placeholder="Nome/legenda da nova foto (Ex: Prumo do nicho da geladeira)..."
-                value={newPhotoLabel}
-                onChange={(e) => setNewPhotoLabel(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAddPhoto()}
-                className="w-full sm:flex-1 bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
-              />
-              <button
-                onClick={handleAddPhoto}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[var(--bg-high)] hover:bg-[var(--color-primary)] text-slate-200 hover:text-slate-950 border border-[var(--border-subtle)] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs"
-              >
-                <Plus className="w-4 h-4" /> Anexar Foto
-              </button>
+            {/* Add Photo & Camera Upload Toolbar */}
+            <div className="p-4 rounded-2xl bg-[var(--bg-low)] border border-[var(--border-subtle)] space-y-3">
+              <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                <input
+                  type="text"
+                  placeholder="Nome ou detalhe do registro (Ex: Ponto de hidráulica com desvio)..."
+                  value={newPhotoLabel}
+                  onChange={(e) => setNewPhotoLabel(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddPhoto()}
+                  className="w-full sm:flex-1 bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)] font-medium"
+                />
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <label className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[var(--bg-container)] hover:bg-[var(--bg-high)] text-purple-300 border border-purple-500/40 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs">
+                    <Camera className="w-4 h-4 text-purple-400" />
+                    Tirar Foto / Carregar
+                    <input
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={handleAddPhoto}
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[var(--bg-high)] hover:bg-[var(--color-primary)] text-slate-200 hover:text-[#1b1715] border border-[var(--border-subtle)] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs"
+                  >
+                    <Plus className="w-4 h-4" /> Adicionar
+                  </button>
+                </div>
+              </div>
+              <p className="text-[11px] text-[var(--text-muted)] flex items-center gap-1.5 font-mono">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Fotos enviadas pela câmera do celular são analisadas localmente pelo modelo Google Gemma 4 12B Vision.
+              </p>
             </div>
           </div>
 

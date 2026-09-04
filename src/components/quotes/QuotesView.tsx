@@ -63,6 +63,7 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
   const [showContractModal, setShowContractModal] = useState(false);
+  const [showProposalPdfModal, setShowProposalPdfModal] = useState(false);
   const [copiedPix, setCopiedPix] = useState(false);
 
   // Helper to get city for quote
@@ -358,6 +359,14 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
                     title="Emitir contrato formal com assinatura digital"
                   >
                     <FileCheck className="w-4 h-4" /> Contrato
+                  </button>
+
+                  <button
+                    onClick={() => setShowProposalPdfModal(true)}
+                    className="px-3 py-1.5 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-amber-400 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                    title="Emitir Proposta Comercial Formatada para Impressão / Salvar PDF"
+                  >
+                    <Printer className="w-4 h-4" /> Proposta PDF
                   </button>
 
                   <button
@@ -923,6 +932,265 @@ export const QuotesView: React.FC<QuotesViewProps> = ({
               >
                 <Send className="w-4 h-4" /> Enviar para Assinatura Eletrônica
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Printable Commercial Proposal (PDF) */}
+      {showProposalPdfModal && selectedQuote && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50 animate-in fade-in overflow-y-auto">
+          {/* Print Stylesheet */}
+          <style>{`
+            @media print {
+              body * {
+                visibility: hidden !important;
+              }
+              #printable-commercial-proposal, #printable-commercial-proposal * {
+                visibility: visible !important;
+              }
+              #printable-commercial-proposal {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 12mm 16mm !important;
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+              }
+              .no-print {
+                display: none !important;
+              }
+            }
+          `}</style>
+
+          <div className="w-full max-w-4xl my-6 space-y-3">
+            {/* Top Toolbar (Hidden on Print) */}
+            <div className="no-print flex items-center justify-between bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-2xl shadow-xl beveled-card">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <Printer className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-sm text-slate-100">
+                    Proposta Comercial Formal — {selectedQuote.quoteNumber}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Layout diagramado em folha A4 para impressão direta ou exportação em PDF via navegador.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowProposalPdfModal(false)}
+                  className="px-4 py-2 rounded-xl bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-xs text-slate-300 hover:text-white cursor-pointer font-semibold transition"
+                >
+                  Fechar
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="convex-btn px-5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Printer className="w-4 h-4" /> Imprimir / Salvar PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Paper Document */}
+            <div
+              id="printable-commercial-proposal"
+              className="bg-white text-slate-900 rounded-2xl shadow-2xl p-8 sm:p-12 space-y-6 font-sans border border-slate-200"
+            >
+              {/* Header Branding */}
+              <div className="flex flex-col sm:flex-row justify-between items-start pb-6 border-b-2 border-amber-600 gap-4">
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-lg bg-amber-600 text-white font-mono font-black text-sm flex items-center justify-center">
+                      WB
+                    </span>
+                    <h1 className="font-display font-extrabold text-2xl tracking-tight text-slate-900">
+                      WOODBIT
+                    </h1>
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-700 mt-1">
+                    Marcenaria Fina & Fabricação Digital CNC / 3D
+                  </p>
+                  <div className="text-xs text-slate-600 mt-2 space-y-0.5 font-mono">
+                    <p>CNPJ: 48.912.834/0001-90 • Inscrição Estadual: 89.412.001</p>
+                    <p>Polo de Fabricação Digital • Natividade - Noroeste Fluminense - RJ</p>
+                    <p>WhatsApp: (22) 99876-5432 • comercial@woodbit.com.br</p>
+                  </div>
+                </div>
+
+                <div className="text-right sm:self-center bg-slate-50 p-4 rounded-xl border border-slate-200 min-w-[220px]">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block">
+                    Proposta Comercial
+                  </span>
+                  <span className="font-mono font-black text-xl text-amber-800 block">
+                    {selectedQuote.quoteNumber}
+                  </span>
+                  <div className="mt-2 text-xs text-slate-600 space-y-0.5">
+                    <p>Emissão: <strong>{new Date().toLocaleDateString('pt-BR')}</strong></p>
+                    <p>Validade: <strong>15 dias corridos</strong></p>
+                    <p>Status: <span className="font-bold text-emerald-700 uppercase">{selectedQuote.status}</span></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client & Project Specs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                <div className="space-y-1">
+                  <span className="font-bold text-slate-500 uppercase tracking-wider block">Dados do Cliente</span>
+                  <p className="text-sm font-bold text-slate-900">{selectedQuote.customerName}</p>
+                  <p className="text-slate-600">Localidade: <strong>{getQuoteCity(selectedQuote)} - RJ</strong></p>
+                </div>
+                <div className="space-y-1 sm:text-right">
+                  <span className="font-bold text-slate-500 uppercase tracking-wider block">Escopo do Projeto</span>
+                  <p className="text-sm font-bold text-slate-900">{selectedQuote.projectTitle}</p>
+                  <p className="text-slate-600">
+                    Prazo de Fabricação: <strong>{selectedQuote.estimatedProductionDays} dias úteis</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Items Table */}
+              <div className="space-y-2">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700 border-b pb-1">
+                  Memorial Descritivo de Móveis & Componentes
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
+                        <th className="p-2.5">Ambiente</th>
+                        <th className="p-2.5">Descrição do Item & Especificação</th>
+                        <th className="p-2.5">Tipo</th>
+                        <th className="p-2.5 text-center">Qtd</th>
+                        <th className="p-2.5 text-right">Unitário</th>
+                        <th className="p-2.5 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {selectedQuote.items.map((item, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                          <td className="p-2.5 font-bold text-slate-800 align-top">{item.roomName}</td>
+                          <td className="p-2.5 text-slate-800 align-top">
+                            <span className="font-semibold block">{item.description}</span>
+                            <span className="text-slate-500 text-[11px] block mt-0.5">
+                              Padrão WoodBit: fita de borda PUR selada contra umidade.
+                            </span>
+                          </td>
+                          <td className="p-2.5 text-slate-600 uppercase font-mono text-[11px] align-top">
+                            {item.category === 'mdf' ? 'MDF Marcenaria' : item.category === 'hardware' ? 'Ferragem' : item.category}
+                          </td>
+                          <td className="p-2.5 text-center font-mono text-slate-700 align-top">
+                            {item.quantity} {item.unit}
+                          </td>
+                          <td className="p-2.5 text-right font-mono text-slate-700 align-top">
+                            R$ {item.unitPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="p-2.5 text-right font-mono font-bold text-slate-900 align-top">
+                            R$ {item.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Totals Box */}
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 p-5 bg-amber-50/70 border-2 border-amber-300 rounded-xl">
+                <div className="space-y-1.5 text-xs text-slate-700 max-w-md">
+                  <span className="font-bold text-amber-900 uppercase tracking-wider block">Condições de Pagamento</span>
+                  <p>
+                    • <strong>Entrada (50%):</strong> R$ {(selectedQuote.totalPrice * 0.5).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} via Chave PIX da marcenaria na aprovação do projeto.
+                  </p>
+                  <p>
+                    • <strong>Saldo Final (50%):</strong> R$ {(selectedQuote.totalPrice * 0.5).toLocaleString('pt-BR', { minimumFractionDigits: 2 })} na entrega e montagem completa no local.
+                  </p>
+                  <p>
+                    • Opção parcelada em até 6x sem juros no cartão de crédito.
+                  </p>
+                </div>
+
+                <div className="text-right sm:self-center min-w-[200px]">
+                  <span className="text-xs text-slate-500 font-bold block uppercase tracking-wider">
+                    Valor Total da Proposta
+                  </span>
+                  <span className="font-mono font-black text-2xl text-amber-900 block mt-1">
+                    R$ {selectedQuote.totalPrice.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-[11px] text-slate-500 block mt-0.5">
+                    Inclusos: Matéria-prima, Usinagem CNC, Impressão 3D e Montagem.
+                  </span>
+                </div>
+              </div>
+
+              {/* Warranties & Technical Differentials */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
+                <span className="font-bold text-slate-900 uppercase tracking-wider block">
+                  Diferenciais Técnicos & Termo de Garantia WoodBit
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <p className="font-bold text-amber-800">✓ 5 Anos de Garantia em Ferragens</p>
+                    <p className="text-[11px] text-slate-600">
+                      Dobradiças e corrediças telescópicas com amortecimento de marcas líderes (Blum / Häfele / FGV).
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-amber-800">✓ Usinagem Digital CNC Nesting</p>
+                    <p className="text-[11px] text-slate-600">
+                      Corte e furação milimétrica com encaixes estruturais perfeitos e aproveitamento otimizado de chapa.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-amber-800">✓ 1 Ano de Garantia Estrutural</p>
+                    <p className="text-[11px] text-slate-600">
+                      Painéis MDF de primeira linha selados com fita de borda PUR contra infiltração e umidade.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-amber-800">✓ Conectores Estruturais 3D em PETG</p>
+                    <p className="text-[11px] text-slate-600">
+                      Componentes complementares fabricados em termoplástico industrial de alta durabilidade e impacto.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Signatures */}
+              <div className="pt-6 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-xs">
+                <div className="space-y-6">
+                  <div className="border-b border-slate-400 w-3/4 mx-auto pb-8"></div>
+                  <div>
+                    <p className="font-bold text-slate-900">{selectedQuote.customerName}</p>
+                    <p className="text-slate-500 text-[11px]">De Acordo / Aceite da Proposta Comercial</p>
+                    <p className="text-slate-400 text-[11px] mt-0.5">Data: ____ / ____ / ________</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="border-b border-slate-400 w-3/4 mx-auto pb-8"></div>
+                  <div>
+                    <p className="font-bold text-slate-900">WoodBit Marcenaria & Usinagem Digital</p>
+                    <p className="text-slate-500 text-[11px]">Responsabilidade Técnica & Produção</p>
+                    <p className="text-slate-400 text-[11px] font-mono mt-0.5">Polo Natividade - RJ</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Note */}
+              <div className="text-center text-[10px] text-slate-400 pt-3 border-t border-slate-200">
+                Documento gerado eletronicamente pelo WoodBit ERP v2.0 • Proposta confidencial e válida por 15 dias.
+              </div>
             </div>
           </div>
         </div>

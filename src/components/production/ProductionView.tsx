@@ -23,7 +23,11 @@ import {
   Zap,
   Activity,
   Download,
-  AlertOctagon
+  AlertOctagon,
+  Boxes,
+  PackageCheck,
+  Archive,
+  Check
 } from 'lucide-react';
 import {
   ProductionOrder,
@@ -31,10 +35,12 @@ import {
   Machine,
   ProductionCenterType,
   ProductionOperation,
-  Project
+  Project,
+  StockItem
 } from '../../types';
 import { CutOptimizerView } from './CutOptimizerView';
 import { CamSimulatorView } from './CamSimulatorView';
+import { useToast } from '../../context/ToastContext';
 
 interface ProductionViewProps {
   productionOrders: ProductionOrder[];
@@ -45,6 +51,8 @@ interface ProductionViewProps {
   onSelectCity?: (city: string) => void;
   onUpdateOrders: (orders: ProductionOrder[]) => void;
   onUpdateMachines: (machines: Machine[]) => void;
+  inventory?: StockItem[];
+  onUpdateInventory?: (inventory: StockItem[]) => void;
 }
 
 export const ProductionView: React.FC<ProductionViewProps> = ({
@@ -56,7 +64,10 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
   onSelectCity,
   onUpdateOrders,
   onUpdateMachines,
+  inventory,
+  onUpdateInventory,
 }) => {
+  const { showToast } = useToast();
   const [productionSubView, setProductionSubView] = useState<'pcp' | 'nesting' | 'cam'>('pcp');
   const [selectedCenter, setSelectedCenter] = useState<string>('all');
 
@@ -115,8 +126,133 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
     return m.type === selectedCenter;
   });
 
+  // Get materials list required for an order based on productLine and project
+  const getOrderRequiredMaterials = (order: ProductionOrder) => {
+    if (order.productLine === 'gamer') {
+      return [
+        { code: 'MDF-GRAFITE-18', name: 'MDF Grafite Matt 18mm', quantity: 2, unit: 'chapas', category: 'mdf_sheet' },
+        { code: 'FIL-PETG-BLK', name: 'Filamento 3D PETG Preto Fosco', quantity: 1, unit: 'kg (carretel)', category: 'filament_3d' },
+        { code: 'COR-BLUM-TANDEM-500', name: 'Corrediça Oculta c/ Amortecimento', quantity: 2, unit: 'pares', category: 'hardware' }
+      ];
+    } else if (order.productLine === 'furniture') {
+      return [
+        { code: 'MDF-FREIJO-18', name: 'MDF Duratex Louro Freijó 18mm', quantity: 3, unit: 'chapas', category: 'mdf_sheet' },
+        { code: 'MDF-BRANCO-15', name: 'MDF Branco TX 15mm Estrutural', quantity: 4, unit: 'chapas', category: 'mdf_sheet' },
+        { code: 'DOB-BLUM-110-SLOW', name: 'Dobradiça Blumotion 110º Amortecedor', quantity: 8, unit: 'unidades', category: 'hardware' }
+      ];
+    } else {
+      return [
+        { code: 'MDF-FREIJO-18', name: 'MDF Duratex Louro Freijó 18mm', quantity: 1, unit: 'chapa', category: 'mdf_sheet' },
+        { code: 'FIL-PETG-BLK', name: 'Filamento 3D PETG Preto Fosco', quantity: 1, unit: 'kg (carretel)', category: 'filament_3d' },
+        { code: 'LED-COB-WARM', name: 'Fita LED COB 3000K Branco Quente', quantity: 3, unit: 'metros', category: 'led_electronics' }
+      ];
+    }
+  };
+
+  // Reserve materials in inventory for the OP
+  const handleReserveMaterials = (order: ProductionOrder) => {
+    if (!inventory || !onUpdateInventory) {
+      showToast('Aviso de Almoxarifado', 'Módulo de estoque indisponível para atualização automática.', 'warning');
+      return;
+    }
+
+    const reqMaterials = getOrderRequiredMaterials(order);
+    let updatedInventory = [...inventory];
+
+    reqMaterials.forEach((req) => {
+      let matched = false;
+      updatedInventory = updatedInventory.map((item) => {
+        if (!matched && (item.code === req.code || item.category === req.category)) {
+          matched = true;
+          const newReserved = (item.reservedQuantity || 0) + req.quantity;
+          const newAvail = Math.max(0, item.currentQuantity - newReserved);
+          return {
+            ...item,
+            reservedQuantity: newReserved,
+            availableQuantity: newAvail,
+          };
+        }
+        return item;
+      });
+    });
+
+    onUpdateInventory(updatedInventory);
+
+    const updatedOrders = productionOrders.map((o) =>
+      o.id === order.id ? { ...o, materialsReserved: true } : o
+    );
+    onUpdateOrders(updatedOrders);
+    if (selectedOrder?.id === order.id) {
+      setSelectedOrder({ ...selectedOrder, materialsReserved: true });
+    }
+
+    showToast(
+      'Insumos Reservados no Almoxarifado!',
+      `Reserva confirmada para a ${order.orderNumber}: ${reqMaterials.map((r) => `${r.quantity} ${r.unit} de ${r.name}`).join(', ')}.`,
+      'success'
+    );
+  };
+
+  // Deduct / consume materials when OP completes
+  const handleDeductMaterials = (order: ProductionOrder) => {
+    if (!inventory || !onUpdateInventory) {
+      showToast('Aviso de Almoxarifado', 'Módulo de estoque indisponível para baixa automática.', 'warning');
+      return;
+    }
+
+    const reqMaterials = getOrderRequiredMaterials(order);
+    let updatedInventory = [...inventory];
+
+    reqMaterials.forEach((req) => {
+      let matched = false;
+      updatedInventory = updatedInventory.map((item) => {
+        if (!matched && (item.code === req.code || item.category === req.category)) {
+          matched = true;
+          const newCurrent = Math.max(0, item.currentQuantity - req.quantity);
+          const newReserved = Math.max(0, (item.reservedQuantity || 0) - req.quantity);
+          const newAvail = Math.max(0, newCurrent - newReserved);
+          return {
+            ...item,
+            currentQuantity: newCurrent,
+            reservedQuantity: newReserved,
+            availableQuantity: newAvail,
+          };
+        }
+        return item;
+      });
+    });
+
+    onUpdateInventory(updatedInventory);
+
+    const updatedOrders = productionOrders.map((o) =>
+      o.id === order.id
+        ? {
+            ...o,
+            materialsReserved: false,
+            materialsDeducted: true,
+            stage: 'completed' as const,
+            progressPercent: 100,
+            operations: o.operations.map((st) => ({ ...st, status: 'done' as const })),
+          }
+        : o
+    );
+    onUpdateOrders(updatedOrders);
+    if (selectedOrder?.id === order.id) {
+      const updated = updatedOrders.find((o) => o.id === order.id);
+      if (updated) setSelectedOrder(updated);
+    }
+
+    showToast(
+      'Baixa Automática Realizada no Estoque!',
+      `Insumos consumidos e debitados fisicamente do Almoxarifado para a ordem ${order.orderNumber}.`,
+      'success'
+    );
+  };
+
   // Advance operation step
   const handleAdvanceStep = (orderId: string, stepId: string) => {
+    let orderToDeduct: ProductionOrder | null = null;
+
     const updated = productionOrders.map((op) => {
       if (op.id !== orderId) return op;
 
@@ -132,6 +268,10 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
         (updatedOps.filter((st) => st.status === 'done').length / updatedOps.length) * 100
       );
 
+      if (allDone && op.materialsReserved && !op.materialsDeducted) {
+        orderToDeduct = op;
+      }
+
       return {
         ...op,
         operations: updatedOps,
@@ -144,6 +284,12 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
     if (selectedOrder?.id === orderId) {
       const current = updated.find((o) => o.id === orderId);
       if (current) setSelectedOrder(current);
+    }
+
+    if (orderToDeduct) {
+      setTimeout(() => {
+        handleDeductMaterials(orderToDeduct!);
+      }, 250);
     }
   };
 
@@ -479,12 +625,34 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {selectedOrder.materialsDeducted ? (
+                    <span className="px-3 py-1.5 rounded-xl bg-emerald-950/70 text-emerald-300 border border-emerald-500/30 text-xs font-bold font-mono flex items-center gap-1.5">
+                      <Check className="w-3.5 h-3.5 text-emerald-400" /> Estoque Baixado
+                    </span>
+                  ) : selectedOrder.materialsReserved ? (
+                    <button
+                      onClick={() => handleDeductMaterials(selectedOrder)}
+                      className="convex-btn px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      title="Efetivar consumo real de insumos no almoxarifado"
+                    >
+                      <PackageCheck className="w-3.5 h-3.5" /> Baixar Estoque
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleReserveMaterials(selectedOrder)}
+                      className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                      title="Reservar chapas de MDF, filamentos e ferragens no almoxarifado"
+                    >
+                      <Boxes className="w-3.5 h-3.5" /> Reservar no Estoque
+                    </button>
+                  )}
+
                   <button
                     onClick={() => setShowNcrModal(true)}
                     className="px-3 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
-                    <AlertOctagon className="w-3.5 h-3.5" /> Registrar NCR / Refugo
+                    <AlertOctagon className="w-3.5 h-3.5" /> Registrar NCR
                   </button>
                 </div>
               </div>
@@ -514,6 +682,95 @@ export const ProductionView: React.FC<ProductionViewProps> = ({
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Materials Traceability & Real-time Stock Consumption */}
+              <div className="space-y-3 bg-[var(--bg-low)] p-4 rounded-xl border border-[var(--border-subtle)]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-2.5">
+                  <h4 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-main)] flex items-center gap-2">
+                    <Boxes className="w-4 h-4 text-[var(--color-primary)]" />
+                    <span>Matéria-Prima & Alocação de Estoque Integrada</span>
+                  </h4>
+
+                  <div>
+                    {selectedOrder.materialsDeducted ? (
+                      <span className="text-xs px-2.5 py-1 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 font-mono font-bold flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5" /> Baixa Efetivada no Almoxarifado
+                      </span>
+                    ) : selectedOrder.materialsReserved ? (
+                      <span className="text-xs px-2.5 py-1 rounded-md bg-amber-950/70 text-amber-300 border border-amber-500/40 font-mono font-bold flex items-center gap-1.5">
+                        <PackageCheck className="w-3.5 h-3.5" /> Insumos Reservados para Corte
+                      </span>
+                    ) : (
+                      <span className="text-xs px-2.5 py-1 rounded-md bg-rose-950/60 text-rose-300 border border-rose-500/30 font-mono font-bold flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5" /> Aguardando Reserva Física
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {getOrderRequiredMaterials(selectedOrder).map((mat, idx) => {
+                    const stockMatch = inventory?.find(
+                      (i) => i.code === mat.code || i.category === mat.category
+                    );
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-[var(--bg-container)] p-3 rounded-xl border border-[var(--border-subtle)] space-y-1 text-xs"
+                      >
+                        <div className="flex items-center justify-between font-mono text-[11px] text-[var(--text-muted)]">
+                          <span>{mat.code}</span>
+                          <span className="font-bold text-amber-400">{mat.quantity} {mat.unit}</span>
+                        </div>
+                        <span className="font-bold text-[var(--text-main)] block truncate">
+                          {mat.name}
+                        </span>
+                        <div className="flex items-center justify-between pt-1 border-t border-[var(--border-subtle)] text-[11px]">
+                          <span className="text-slate-400">Saldo Almoxarifado:</span>
+                          <span className="font-mono font-bold text-slate-200">
+                            {stockMatch ? `${stockMatch.currentQuantity} disp.` : 'Disponível'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-[var(--text-muted)] pt-2 border-t border-[var(--border-subtle)] gap-2">
+                  <span>
+                    {selectedOrder.materialsDeducted
+                      ? '✓ Todas as chapas e ferragens foram consumidas e debitadas do almoxarifado via PCP.'
+                      : selectedOrder.materialsReserved
+                      ? 'Insumos alocados na oficina. Ao concluir as etapas de montagem, a baixa física é automática.'
+                      : 'Chapas e insumos ainda não alocados. Reserve antes de iniciar a usinagem CNC.'}
+                  </span>
+
+                  {!selectedOrder.materialsDeducted && (
+                    <button
+                      onClick={() =>
+                        selectedOrder.materialsReserved
+                          ? handleDeductMaterials(selectedOrder)
+                          : handleReserveMaterials(selectedOrder)
+                      }
+                      className={
+                        selectedOrder.materialsReserved
+                          ? 'convex-btn px-3.5 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs self-end sm:self-auto shrink-0'
+                          : 'px-3.5 py-1.5 rounded-lg font-bold text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 cursor-pointer shadow-xs transition self-end sm:self-auto shrink-0'
+                      }
+                    >
+                      {selectedOrder.materialsReserved ? (
+                        <>
+                          <PackageCheck className="w-3.5 h-3.5" /> Efetivar Baixa no Estoque
+                        </>
+                      ) : (
+                        <>
+                          <Boxes className="w-3.5 h-3.5" /> Reservar Insumos no Estoque
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
