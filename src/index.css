@@ -2,76 +2,76 @@
 
 @layer base {
   :root {
-    /* Premium Obsidian & Warm Titanium Dark Palette */
-    --bg-surface: #0a0c10;
-    --bg-lowest: #060709;
-    --bg-low: #10131a;
-    --bg-container: #161a23;
-    --bg-high: #1e2330;
-    --bg-highest: #282f40;
-    --bg-bright: #353e54;
+    /* WoodBit Organic Tech — Original Signature Palette */
+    --bg-surface: #0e0c0b;
+    --bg-lowest: #080706;
+    --bg-low: #14110f;
+    --bg-container: #1b1715;
+    --bg-high: #24201d;
+    --bg-highest: #302a27;
+    --bg-bright: #3d3531;
 
-    /* High-Legibility Typography Colors (WCAG AAA) */
-    --text-main: #f8fafc;
-    --text-muted: #cbd5e1;
-    --text-faint: #94a3b8;
+    /* High-Legibility Warm Bone & Pearl Typography */
+    --text-main: #f5eeea;
+    --text-muted: #c4b5aa;
+    --text-faint: #8a7b70;
 
-    /* Borders with Subtle Glassmorphism Glow */
-    --border-outline: #475569;
-    --border-subtle: #242b3b;
-    --border-card: rgba(245, 158, 11, 0.18);
+    /* Delicate Warm Walnut & Hairline Borders */
+    --border-outline: #6e6054;
+    --border-subtle: #2f2722;
+    --border-card: rgba(245, 194, 127, 0.14);
 
-    /* Artisan Wood Accents: Brushed Amber & Warm Honey Gold */
-    --color-primary: #f59e0b;
-    --color-primary-hover: #fbbf24;
-    --color-primary-container: #451a03;
-    --text-on-primary: #0f0a02;
+    /* Original Warm Honey Amber / Golden Wood Tone */
+    --color-primary: #f5c27f;
+    --color-primary-hover: #ffd8a0;
+    --color-primary-container: #3d2404;
+    --text-on-primary: #241400;
 
-    /* Digital Fabrication: CNC Cyan & Emerald Precision */
-    --color-secondary: #10b981;
-    --color-secondary-container: #064e3b;
-    --color-tertiary: #38bdf8;
-    --color-error: #f43f5e;
-    --color-error-container: #881337;
+    /* Digital Fabrication: Precision Sage Green & Accents */
+    --color-secondary: #7dd396;
+    --color-secondary-container: #14381b;
+    --color-tertiary: #f0ad73;
+    --color-error: #fca5a5;
+    --color-error-container: #5c1414;
 
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 15px;
     line-height: 1.6;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   .light {
-    --bg-surface: #f8fafc;
+    --bg-surface: #fbf8f4;
     --bg-lowest: #ffffff;
-    --bg-low: #f1f5f9;
-    --bg-container: #e2e8f0;
-    --bg-high: #cbd5e1;
-    --bg-highest: #94a3b8;
-    --bg-bright: #64748b;
+    --bg-low: #f4ede4;
+    --bg-container: #ebe1d4;
+    --bg-high: #e0d4c5;
+    --bg-highest: #d5c6b5;
+    --bg-bright: #caa38a;
 
-    --text-main: #0f172a;
-    --text-muted: #334155;
-    --text-faint: #64748b;
+    --text-main: #1f1712;
+    --text-muted: #574639;
+    --text-faint: #857365;
 
-    --border-outline: #94a3b8;
-    --border-subtle: #cbd5e1;
-    --border-card: rgba(180, 83, 9, 0.2);
+    --border-outline: #9e8979;
+    --border-subtle: #dbcbba;
+    --border-card: rgba(148, 89, 26, 0.14);
 
-    --color-primary: #b45309;
-    --color-primary-hover: #92400e;
-    --color-primary-container: #fef3c7;
+    --color-primary: #94591a;
+    --color-primary-hover: #7b4610;
+    --color-primary-container: #fde2be;
     --text-on-primary: #ffffff;
 
-    --color-secondary: #059669;
-    --color-secondary-container: #d1fae5;
-    --color-tertiary: #0284c7;
-    --color-error: #e11d48;
-    --color-error-container: #ffe4e6;
+    --color-secondary: #246824;
+    --color-secondary-container: #bbf0b5;
+    --color-tertiary: #8f4f1a;
+    --color-error: #b91c1c;
+    --color-error-container: #fed7d7;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.025em;
     font-weight: 700;
   }
 
@@ -81,131 +81,150 @@
 }
 
 /* ==========================================================================
-   Luxe Industrial & Organic Tech Components
+   WoodBit Artisan Tech Visual Signatures
    ========================================================================== */
 
-/* Premium Glassmorphic Cards */
+/* Theme Surface & Containers */
+.theme-surface {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+.theme-card {
+  background-color: var(--bg-container);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.theme-input {
+  background-color: var(--bg-lowest);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.theme-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(245, 194, 127, 0.2);
+}
+
+/* Tactile Craft Beveled Card */
 .beveled-card, .premium-card {
-  background: rgba(22, 26, 35, 0.82);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.04);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: var(--bg-container);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(245, 194, 127, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .beveled-card:hover, .premium-card:hover {
-  border-color: rgba(245, 158, 11, 0.35);
-  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.55), 0 0 20px -3px rgba(245, 158, 11, 0.12);
-  transform: translateY(-2px);
+  border-color: rgba(245, 194, 127, 0.32);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(245, 194, 127, 0.15);
 }
 
 .light .beveled-card, .light .premium-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.06), 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  background-color: var(--bg-container);
+  box-shadow: 0 4px 16px -2px rgba(80, 60, 40, 0.07), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-subtle);
 }
 
-.light .beveled-card:hover, .light .premium-card:hover {
-  border-color: rgba(180, 83, 9, 0.35);
-  box-shadow: 0 16px 32px -4px rgba(15, 23, 42, 0.1), 0 0 20px -3px rgba(180, 83, 9, 0.1);
-  transform: translateY(-2px);
-}
-
-/* Artisan Wood & Gold Convex Button */
+/* Original Warm Honey Amber Convex Button */
 .convex-btn {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
-  color: #0c0802;
+  background: linear-gradient(180deg, #e8b26e 0%, #cf934b 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 12px rgba(0, 0, 0, 0.4);
+  color: #1a0e02;
   font-weight: 700;
-  box-shadow: 0 4px 14px 0 rgba(245, 158, 11, 0.39), inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .convex-btn:hover {
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-  box-shadow: 0 6px 20px 0 rgba(245, 158, 11, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
-  transform: translateY(-1.5px);
+  background: linear-gradient(180deg, #f3c285 0%, #dc9e56 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 6px 18px rgba(232, 178, 110, 0.35);
+  transform: translateY(-1px);
 }
 
 .convex-btn:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 8px 0 rgba(245, 158, 11, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
 }
 
 .light .convex-btn {
-  background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+  background: linear-gradient(180deg, #a6621a 0%, #85480f 100%);
   color: #ffffff;
-  box-shadow: 0 4px 14px 0 rgba(180, 83, 9, 0.25), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 3px 8px rgba(100, 60, 20, 0.2);
 }
 
 .light .convex-btn:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  box-shadow: 0 6px 20px 0 rgba(180, 83, 9, 0.35);
+  background: linear-gradient(180deg, #b66f21 0%, #945314 100%);
 }
 
-/* Secondary Titanium Button */
-.titanium-btn {
-  background: rgba(30, 35, 48, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Secondary Tactile Wood Button */
+.wood-btn-secondary {
+  background-color: var(--bg-low);
+  border: 1px solid var(--border-subtle);
   color: var(--text-main);
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
 }
 
-.titanium-btn:hover {
-  background: rgba(40, 47, 64, 0.9);
-  border-color: rgba(245, 158, 11, 0.3);
+.wood-btn-secondary:hover {
+  background-color: var(--bg-high);
+  border-color: rgba(245, 194, 127, 0.35);
+  color: var(--color-primary);
   transform: translateY(-1px);
 }
 
-/* Debossed & Embossed Containers */
+/* Debossed Low-Relief Containers */
 .debossed {
-  background: rgba(10, 12, 16, 0.75);
-  box-shadow: inset 0 2px 5px 0 rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background-color: var(--bg-lowest);
+  box-shadow: inset 0 2px 5px 0 rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(245, 194, 127, 0.04);
 }
 
 .light .debossed {
-  background: rgba(241, 245, 249, 0.9);
-  box-shadow: inset 0 2px 5px 0 rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  background-color: var(--bg-low);
+  box-shadow: inset 0 2px 5px 0 rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 /* Subtle Organic Wood Grain Shader */
 .wood-grain {
-  background-image: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 70%),
+  background-image: radial-gradient(circle at 50% 0%, rgba(245, 194, 127, 0.035) 0%, transparent 75%),
     repeating-linear-gradient(
       45deg,
-      rgba(245, 158, 11, 0.015),
-      rgba(245, 158, 11, 0.015) 1px,
+      rgba(245, 194, 127, 0.012),
+      rgba(245, 194, 127, 0.012) 1px,
       transparent 1px,
-      transparent 10px
+      transparent 8px
+    );
+}
+
+.light .wood-grain {
+  background-image: radial-gradient(circle at 50% 0%, rgba(148, 89, 26, 0.03) 0%, transparent 75%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(148, 89, 26, 0.015),
+      rgba(148, 89, 26, 0.015) 1px,
+      transparent 1px,
+      transparent 8px
     );
 }
 
 /* Status Glow Indicators */
 .pulse-glow-amber {
-  box-shadow: 0 0 14px 2px rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 12px 1px rgba(245, 194, 127, 0.4);
 }
 
 .pulse-glow-emerald {
-  box-shadow: 0 0 14px 2px rgba(16, 185, 129, 0.45);
-}
-
-.pulse-glow-cyan {
-  box-shadow: 0 0 14px 2px rgba(56, 189, 248, 0.45);
+  box-shadow: 0 0 12px 1px rgba(125, 211, 150, 0.4);
 }
 
 /* Precision Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-lowest);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-subtle);
+  background: var(--bg-highest);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {

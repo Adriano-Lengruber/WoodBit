@@ -113,7 +113,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       };
     }
     return {
-      title: 'Resumo Operacional Unificado — Noroeste Fluminense',
+      title: 'Console Executivo da Oficina — Noroeste Fluminense',
       badge: '4 Polos Ativos',
       text: `Visão geral consolidada: ${projects.length} projetos no pipeline e ${productionOrders.length} OPs ativas entre Natividade, Itaperuna, Porciúncula e Varre-Sai. Router CNC Pro operando em 85% de capacidade e o 3D Lab em 55%.`,
     };
@@ -145,13 +145,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Top Banner: Day Summary by Local AI */}
-      <div className="bg-gradient-to-r from-[var(--bg-container)] via-[var(--bg-high)] to-[var(--bg-container)] border border-[var(--color-primary)]/30 rounded-2xl p-6 shadow-xl relative overflow-hidden beveled-card">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--color-primary)]/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Top Banner: Day Summary by Local AI (Warm Wood & Amber Style) */}
+      <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/35 rounded-2xl p-6 shadow-xl relative overflow-hidden beveled-card wood-grain">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--color-primary)]/5 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[var(--color-primary)]/25 to-[var(--color-primary-container)] border border-[var(--color-primary)]/40 flex items-center justify-center text-[var(--color-primary)] shrink-0 shadow-md">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary-container)]/70 border border-[var(--color-primary)]/40 flex items-center justify-center text-[var(--color-primary)] shrink-0 shadow-md">
               <Sparkles className="w-6 h-6 animate-pulse" />
             </div>
             <div className="space-y-1.5">
@@ -209,7 +209,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="font-display font-black text-3xl sm:text-4xl text-[var(--text-main)]">
               {activeProjectsCount}
             </span>
-            <span className="text-xs text-[var(--color-secondary)] font-mono font-bold flex items-center bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+            <span className="text-xs text-[var(--color-secondary)] font-mono font-bold flex items-center bg-[var(--color-secondary-container)] px-2 py-0.5 rounded-full border border-[var(--color-secondary)]/30">
               <TrendingUp className="w-3.5 h-3.5 mr-1" /> {selectedCity === 'all' ? '+4 ativos' : 'Polo ativo'}
             </span>
           </div>
@@ -233,7 +233,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <span className="font-display font-black text-3xl sm:text-4xl text-[var(--text-main)]">
               {activeOpsCount}
             </span>
-            <span className="text-xs text-sky-400 font-mono font-bold bg-sky-950/60 px-2 py-0.5 rounded-full border border-sky-500/30">
+            <span className="text-xs text-[var(--color-tertiary)] font-mono font-bold bg-[var(--bg-high)] px-2 py-0.5 rounded-full border border-[var(--color-tertiary)]/30">
               Router CNC + 3D
             </span>
           </div>
@@ -249,12 +249,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-[var(--text-muted)]">Contas a Receber</span>
-            <div className="w-9 h-9 rounded-xl bg-[var(--bg-low)] flex items-center justify-center text-emerald-400 border border-[var(--border-subtle)] group-hover:border-emerald-500 transition">
+            <div className="w-9 h-9 rounded-xl bg-[var(--bg-low)] flex items-center justify-center text-[var(--color-secondary)] border border-[var(--border-subtle)] group-hover:border-[var(--color-secondary)] transition">
               <DollarSign className="w-4.5 h-4.5" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-display font-black text-2xl sm:text-3xl text-emerald-400 font-mono">
+            <span className="font-display font-black text-2xl sm:text-3xl text-[var(--color-secondary)] font-mono">
               R$ {totalReceivables.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </span>
           </div>
@@ -274,7 +274,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
           <div className="flex items-baseline gap-3">
             <span className="font-display font-black text-3xl sm:text-4xl text-[var(--text-main)]">76%</span>
-            <span className="text-xs text-amber-400 font-mono font-bold bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">
+            <span className="text-xs text-[var(--color-primary)] font-mono font-bold bg-[var(--color-primary-container)] px-2 py-0.5 rounded-full border border-[var(--color-primary)]/30">
               CNC 85% • 3D 55%
             </span>
           </div>
@@ -317,8 +317,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <span
                       className={`text-xs px-2.5 py-1 rounded-full font-mono font-bold ${
                         mach.status === 'busy'
-                          ? 'bg-amber-950/70 text-amber-300 border border-amber-600/40'
-                          : 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/40'
+                          ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/40'
+                          : 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40'
                       }`}
                     >
                       {mach.status === 'busy' ? '● Em Operação' : '○ Disponível'}
@@ -337,7 +337,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </div>
                       <div className="w-full h-2.5 bg-[var(--bg-lowest)] rounded-full overflow-hidden border border-[var(--border-subtle)]">
                         <div
-                          className="h-full bg-gradient-to-r from-[var(--color-primary)] to-[#fbbf24] rounded-full transition-all duration-500 shadow-sm"
+                          className="h-full bg-gradient-to-r from-[#94591a] to-[var(--color-primary)] rounded-full transition-all duration-500 shadow-sm"
                           style={{ width: `${mach.currentJob.progressPercent}%` }}
                         ></div>
                       </div>
@@ -349,7 +349,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   ) : (
                     <div className="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between text-xs text-[var(--text-faint)]">
                       <span>Pronta para novo G-code</span>
-                      <span className="text-emerald-400 font-bold">Buffer 100% livre</span>
+                      <span className="text-[var(--color-secondary)] font-bold">Buffer 100% livre</span>
                     </div>
                   )}
                 </div>
@@ -421,10 +421,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <span
                           className={`font-black font-mono text-sm ${
                             prj.marginPercent >= 35
-                              ? 'text-emerald-400'
+                              ? 'text-[var(--color-secondary)]'
                               : prj.marginPercent >= 25
                               ? 'text-[var(--color-primary)]'
-                              : 'text-rose-400'
+                              : 'text-[var(--color-error)]'
                           }`}
                         >
                           {prj.marginPercent}%
@@ -436,10 +436,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <span
                           className={`text-xs px-2.5 py-0.5 rounded-full font-mono font-bold uppercase ${
                             prj.riskScore === 'low'
-                              ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/30'
+                              ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/30'
                               : prj.riskScore === 'medium'
-                              ? 'bg-amber-950/70 text-amber-300 border border-amber-500/30'
-                              : 'bg-rose-950/70 text-rose-300 border border-rose-500/30'
+                              ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
+                              : 'bg-[var(--color-error-container)] text-[var(--color-error)] border border-[var(--color-error)]/30'
                           }`}
                         >
                           {prj.riskScore}
@@ -500,9 +500,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <span
                       className={`text-xs px-2.5 py-1 rounded-full font-mono font-bold ${
                         lead.stage === 'approved'
-                          ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-500/30'
+                          ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/30'
                           : lead.stage === 'quote_sent'
-                          ? 'bg-amber-950/70 text-amber-300 border border-amber-500/30'
+                          ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
                           : 'bg-[var(--bg-high)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
                       }`}
                     >
@@ -541,13 +541,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
             <button
               onClick={() => onNavigate('field')}
-              className="p-4 rounded-2xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-emerald-500 text-left transition cursor-pointer shadow-sm group space-y-1"
+              className="p-4 rounded-2xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-secondary)] text-left transition cursor-pointer shadow-sm group space-y-1"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-emerald-400 block group-hover:underline">
+                <span className="text-sm font-bold text-[var(--color-secondary)] block group-hover:underline">
                   Visita Técnica
                 </span>
-                <ClipboardCheck className="w-4 h-4 text-emerald-400" />
+                <ClipboardCheck className="w-4 h-4 text-[var(--color-secondary)]" />
               </div>
               <span className="text-xs text-[var(--text-faint)] block">Medição & Visão IA</span>
             </button>

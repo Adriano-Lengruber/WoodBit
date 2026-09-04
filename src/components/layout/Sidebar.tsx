@@ -15,9 +15,9 @@ import {
   Cpu,
   Boxes,
   Scissors,
-  Zap,
   Radio,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -37,7 +37,7 @@ interface NavSection {
     label: string;
     icon: React.ElementType;
     badge?: string;
-    badgeVariant?: 'amber' | 'emerald' | 'purple' | 'neutral';
+    badgeVariant?: 'amber' | 'sage' | 'wood' | 'neutral';
     isAi?: boolean;
   }[];
 }
@@ -50,38 +50,39 @@ export const Sidebar: React.FC<SidebarProps> = ({
   userRole,
   onChangeRole,
 }) => {
+  // Reorganized into 4 strategic operational command hubs
   const sections: NavSection[] = [
     {
-      title: 'Visão Geral',
+      title: 'Atendimento & Projetos',
       items: [
         { id: 'dashboard', label: 'Painel Central', icon: LayoutDashboard, badge: 'Hoje', badgeVariant: 'amber' },
         { id: 'crm', label: 'Funil & Leads WhatsApp', icon: Kanban, badge: '4 leads', badgeVariant: 'amber' },
+        { id: 'quotes', label: 'Orçamentos & Margem', icon: FileText },
+        { id: 'projects', label: 'Projetos & Ambientes', icon: Layers },
       ],
     },
     {
-      title: 'Engenharia & PCP',
+      title: 'Engenharia & Chão de Fábrica',
       items: [
-        { id: 'production', label: 'Usinagem & 3D Lab', icon: Hammer, badge: '2 OPs', badgeVariant: 'emerald' },
+        { id: 'production', label: 'Usinagem & 3D Lab', icon: Hammer, badge: '2 OPs', badgeVariant: 'sage' },
         { id: 'cut_optimizer', label: 'Plano de Corte 2D', icon: Scissors, badge: 'Nesting', badgeVariant: 'neutral' },
-        { id: 'catalog', label: 'Catálogo & Paramétrico', icon: Boxes, badge: 'Gamer', badgeVariant: 'purple' },
+        { id: 'catalog', label: 'Catálogo & Paramétrico', icon: Boxes, badge: 'Gamer', badgeVariant: 'wood' },
         { id: 'field', label: 'Visita Técnica / Campo', icon: ClipboardCheck },
       ],
     },
     {
-      title: 'Comercial & Gestão',
+      title: 'Suprimentos & Controladoria',
       items: [
-        { id: 'quotes', label: 'Orçamentos & Margem', icon: FileText },
-        { id: 'projects', label: 'Projetos & Ambientes', icon: Layers },
         { id: 'inventory', label: 'Estoque & Reservas', icon: Package },
-        { id: 'finance', label: 'Financeiro & Fluxo', icon: DollarSign },
+        { id: 'finance', label: 'Financeiro & Custos', icon: DollarSign },
+        { id: 'client_portal', label: 'Portal da Transparência', icon: Globe },
       ],
     },
     {
-      title: 'Inteligência & Auditoria',
+      title: 'Inteligência & Governança',
       items: [
-        { id: 'ai_operations', label: 'AI Gateway & Lab', icon: Cpu, isAi: true, badge: 'Gemma 4', badgeVariant: 'amber' },
-        { id: 'client_portal', label: 'Portal do Cliente', icon: Globe },
-        { id: 'audit', label: 'Auditoria & Logs', icon: History },
+        { id: 'ai_operations', label: 'AI Gateway (Gemma 4)', icon: Cpu, isAi: true, badge: '12B QAT', badgeVariant: 'amber' },
+        { id: 'audit', label: 'Auditoria & LGPD', icon: ShieldCheck },
       ],
     },
   ];
@@ -93,13 +94,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     >
       <div className="flex flex-col">
         {/* Brand Header */}
-        <div className="p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-lowest)]/50">
+        <div className="p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-lowest)]/60">
           <div className="flex items-center gap-3.5">
             <div className="relative group">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#f59e0b] via-[#d97706] to-[#78350f] flex items-center justify-center shadow-lg shadow-[#d97706]/30 text-[#0c0802] font-black text-2xl tracking-tighter shrink-0 border border-[#fbbf24]/50">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#f5c27f] via-[#e8b26e] to-[#94591a] flex items-center justify-center shadow-lg shadow-[#3d2404]/50 text-[#241400] font-black text-2xl tracking-tighter shrink-0 border border-[#ffd8a0]/60">
                 W
               </div>
-              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#10b981] border-2 border-[var(--bg-container)]"></span>
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-[var(--color-secondary)] border-2 border-[var(--bg-container)]"></span>
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -110,13 +111,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   STUDIO
                 </span>
               </div>
-              <p className="text-xs text-[var(--text-muted)] font-mono font-semibold tracking-wide mt-0.5 flex items-center gap-1.5">
+              <p className="text-xs text-[var(--text-muted)] font-mono font-medium tracking-wide mt-0.5 flex items-center gap-1.5">
                 <span>CNC ROUTER</span> • <span>3D LAB</span> • <span>CAD</span>
               </p>
             </div>
           </div>
 
-          {/* Quick Action Button */}
+          {/* Prominent Golden Action Button */}
           <button
             id="btn-new-project"
             onClick={onOpenNewProject}
@@ -127,13 +128,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Grouped Navigation */}
+        {/* Grouped Operational Navigation */}
         <nav className="p-3.5 space-y-5">
           {sections.map((sec, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-primary)]/80 px-3 block mb-1.5 font-sans">
-                {sec.title}
-              </span>
+              <div className="flex items-center justify-between px-3 mb-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-primary)] font-mono">
+                  {sec.title}
+                </span>
+              </div>
               {sec.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentView === item.id;
@@ -144,7 +147,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     onClick={() => onSelectView(item.id)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 shadow-sm beveled-card'
+                        ? 'bg-[var(--color-primary-container)]/50 text-[var(--color-primary)] border border-[var(--color-primary)]/40 shadow-sm beveled-card'
                         : 'text-[var(--text-muted)] hover:bg-[var(--bg-low)] hover:text-[var(--text-main)]'
                     }`}
                   >
@@ -164,10 +167,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {item.badge && (
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-mono font-bold shrink-0 ${
-                          item.badgeVariant === 'purple'
-                            ? 'bg-purple-950/70 text-purple-300 border border-purple-800/50'
-                            : item.badgeVariant === 'emerald'
-                            ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-800/50'
+                          item.badgeVariant === 'sage'
+                            ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40'
+                            : item.badgeVariant === 'wood'
+                            ? 'bg-[var(--bg-high)] text-[var(--color-tertiary)] border border-[var(--color-tertiary)]/30'
                             : item.badgeVariant === 'amber'
                             ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/40'
                             : 'bg-[var(--bg-lowest)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
@@ -185,16 +188,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer / User Profile & Role Switcher */}
-      <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-lowest)]/70 space-y-3 shrink-0">
+      <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-lowest)]/80 space-y-3 shrink-0">
         {/* Quick AI Trigger */}
         <button
           id="btn-sidebar-quick-ai"
           onClick={onOpenAiAssistant}
-          className="w-full py-2.5 px-3 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)] flex items-center justify-between text-xs text-[var(--color-primary)] font-bold transition cursor-pointer shadow-xs group"
+          className="w-full py-2.5 px-3 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/60 flex items-center justify-between text-xs text-[var(--color-primary)] font-bold transition cursor-pointer shadow-xs group"
         >
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[var(--color-primary)] group-hover:rotate-12 transition-transform" />
-            <span className="text-xs">Copilot Studio Local (Gemma 4)</span>
+            <span className="text-xs">Copilot Local (Gemma 4)</span>
           </div>
           <kbd className="px-2 py-0.5 rounded bg-[var(--bg-lowest)] text-xs text-[var(--text-muted)] font-mono border border-[var(--border-subtle)] font-bold">
             ⌘K

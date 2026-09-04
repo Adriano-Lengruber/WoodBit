@@ -6,10 +6,8 @@ import {
   MapPin,
   Moon,
   Sun,
-  Cpu,
   Menu,
-  Check,
-  Zap,
+  CheckCircle2,
   Radio
 } from 'lucide-react';
 import { UserRole } from '../../types';
@@ -71,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
       id="woodbit-header"
       className="h-16 bg-[var(--bg-surface)]/95 backdrop-blur-md border-b border-[var(--border-subtle)] px-5 md:px-8 flex items-center justify-between sticky top-0 z-20 transition-colors duration-200"
     >
-      {/* Left: Mobile menu toggle & Search */}
+      {/* Left: Mobile menu toggle & Global Workbench Search */}
       <div className="flex items-center gap-4 flex-1 max-w-xl">
         <button
           id="btn-mobile-menu"
@@ -86,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
           <input
             id="global-search-input"
             type="text"
-            placeholder="Buscar projetos, clientes, OPs, materiais ou códigos..."
+            placeholder="Buscar projetos, clientes, OPs, chapas MDF ou códigos..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full bg-[var(--bg-lowest)] border border-[var(--border-subtle)] rounded-xl pl-10 pr-9 py-2 text-sm text-[var(--text-main)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--color-primary)] transition"
@@ -97,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Actions, Regional Hub, AI Status, Theme & Profile */}
+      {/* Right: Regional Hub, AI Status, Theme & Profile */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* City / Hub Selector */}
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-xs text-[var(--text-muted)] transition shadow-xs">
@@ -126,11 +124,11 @@ export const Header: React.FC<HeaderProps> = ({
           </select>
         </div>
 
-        {/* AI Model Status Badge */}
+        {/* AI Local Engine Status Badge */}
         <button
           onClick={onOpenAiAssistant}
           className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--color-primary-container)]/80 text-[var(--color-primary)] border border-[var(--color-primary)]/40 hover:bg-[var(--color-primary-container)] transition cursor-pointer text-xs font-bold"
-          title="Gemma 4 12B QAT ativo localmente"
+          title="Gemma 4 12B QAT ativo localmente no LM Studio"
         >
           <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
           <span>Gemma 4 Local</span>
@@ -186,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="p-2 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-[var(--text-main)] transition cursor-pointer"
           title={isDarkMode ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
         >
-          {isDarkMode ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-slate-700" />}
+          {isDarkMode ? <Sun className="w-4.5 h-4.5 text-[var(--color-primary)]" /> : <Moon className="w-4.5 h-4.5 text-[#574639]" />}
         </button>
       </div>
     </header>
