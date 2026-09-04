@@ -3,6 +3,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
+import { initDatabase, dbService } from './server/db';
 
 dotenv.config();
 
@@ -10,6 +11,9 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: '25mb' }));
+
+// Initialize native SQLite database on boot
+initDatabase();
 
 // Lazy Google GenAI Client
 let geminiClient: GoogleGenAI | null = null;
@@ -267,15 +271,14 @@ app.post('/api/ai/chat', async (req, res) => {
   });
 });
 
-// 2. Lead Triage Structured Output (Local-First with Gemma 4 / Ollama -> Gemini -> Rule Engine)
-app.post('/api/ai/triage-lead', async (req, res) => {
-  const { customerName, text, origin } = req.body;
+// Reusable Lead Triage Helper (Local Gemma 4 -> Gemini -> Rule Engine)
+export async function performLeadTriage(customerName: string, text: string, origin: string = 'WhatsApp') {
   const startTime = Date.now();
 
   const prompt = `Você é o classificador especialista do funil de vendas da WoodBit (Marcenaria + CNC + Impressão 3D em Natividade/RJ).
 Analise a mensagem de lead recebida:
 Cliente: ${customerName}
-Origem: ${origin || 'WhatsApp'}
+Origem: ${origin}
 Mensagem/Briefing: "${text}"
 
 Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depois):
@@ -290,7 +293,7 @@ Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depoi
   "confidence": 0.95
 }`;
 
-  let triageResult = {
+  let triageResult: any = {
     category: 'furniture',
     urgency: 'medium',
     estimatedComplexity: 'medium',
@@ -305,7 +308,7 @@ Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depoi
     processedByModel: 'WoodBit Local Rule Engine',
   };
 
-  // 1. Try LM Studio (Gemma 4)
+  // 1. Try LM Studio (Gemma 4 12B QAT)
   const activeLMModel = await getLMStudioActiveModel();
   const lmRes = await callLocalAI(
     'http://localhost:1234/v1/chat/completions',
@@ -332,11 +335,11 @@ Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depoi
         ...parsed,
         processedByModel: `${activeLMModel} (LM Studio Local)`,
       };
-      return res.json({
+      return {
         triage: triageResult,
         latencyMs: Date.now() - startTime,
         wasLocal: true,
-      });
+      };
     }
   }
 
@@ -367,11 +370,18 @@ Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depoi
     }
   }
 
-  res.json({
+  return {
     triage: triageResult,
     latencyMs: Date.now() - startTime,
     wasLocal: triageResult.processedByModel.includes('Local'),
-  });
+  };
+}
+
+// 2. Lead Triage Structured Output Endpoint
+app.post('/api/ai/triage-lead', async (req, res) => {
+  const { customerName, text, origin } = req.body;
+  const result = await performLeadTriage(customerName, text, origin);
+  res.json(result);
 });
 
 // 3. Voice to Quote Parser (Local-First with Gemma 4 -> Gemini -> Rule Engine)
@@ -654,6 +664,303 @@ app.post('/api/ai/eval-benchmark', async (req, res) => {
     timestamp: new Date().toISOString(),
     results: benchmarkResults,
   });
+});
+
+// ============================================================================
+// Native SQLite Database Persistence Endpoints
+// ============================================================================
+
+// 1. Get entire synced state from SQLite
+app.get('/api/db/sync', (req, res) => {
+  try {
+    const data = dbService.getAllState();
+    res.json({ success: true, data, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    console.error('[WoodBit Database] Sync fetch error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Push state updates to SQLite
+app.post('/api/db/sync', (req, res) => {
+  try {
+    const { key, data } = req.body;
+    if (key && data !== undefined) {
+      dbService.saveState(key, data);
+    } else if (data && typeof data === 'object') {
+      for (const [k, v] of Object.entries(data)) {
+        dbService.saveState(k, v);
+      }
+    }
+    res.json({ success: true, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    console.error('[WoodBit Database] Sync save error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Save individual lead
+app.post('/api/db/lead', (req, res) => {
+  try {
+    const lead = req.body;
+    dbService.saveLead(lead);
+    res.json({ success: true, lead });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Save individual project
+app.post('/api/db/project', (req, res) => {
+  try {
+    const project = req.body;
+    dbService.saveProject(project);
+    res.json({ success: true, project });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Save individual quote
+app.post('/api/db/quote', (req, res) => {
+  try {
+    const quote = req.body;
+    dbService.saveQuote(quote);
+    res.json({ success: true, quote });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6. Save individual production order
+app.post('/api/db/production-order', (req, res) => {
+  try {
+    const order = req.body;
+    dbService.saveProductionOrder(order);
+    res.json({ success: true, order });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 7. Save audit log
+app.post('/api/db/audit', (req, res) => {
+  try {
+    const entry = req.body;
+    dbService.addAuditLog(entry);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// WhatsApp Webhook & Integration Endpoints (Evolution API / Baileys Compatible)
+// ============================================================================
+
+// 1. WhatsApp Connection Status
+app.get('/api/whatsapp/status', (req, res) => {
+  res.json({
+    online: true,
+    provider: 'Evolution API / Baileys Gateway',
+    instanceName: 'woodbit-natividade-hub',
+    webhookUrl: 'http://localhost:3000/api/whatsapp/webhook',
+    triageModel: 'google/gemma-4-12b-qat (LM Studio Local)',
+    activePoles: ['Natividade', 'Itaperuna', 'Porciúncula', 'Varre-Sai'],
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Helper to extract incoming WhatsApp data (supports Evolution API format & direct JSON format)
+function parseWhatsAppPayload(body: any) {
+  // Direct simple format
+  if (body.customerName || body.message || body.phone) {
+    return {
+      customerName: body.customerName || 'Cliente WhatsApp',
+      phone: body.phone || '(22) 99800-0000',
+      city: body.city || 'Natividade - RJ',
+      productLine: body.productLine || 'furniture',
+      message: body.message || body.text || '',
+      mediaType: body.mediaType,
+      mediaUrl: body.mediaUrl,
+    };
+  }
+
+  // Evolution API / Baileys messages.upsert format
+  const msgData = body.data?.message || body.message || {};
+  const pushName = body.data?.pushName || body.pushName || 'Cliente WhatsApp';
+  const remoteJid = body.data?.key?.remoteJid || body.key?.remoteJid || '5522998000000@s.whatsapp.net';
+  const phone = remoteJid.split('@')[0].replace(/^55/, '($1) ').replace(/^55(\d{2})(\d{5})(\d{4})/, '($1) $2-$3') || remoteJid;
+
+  const messageText =
+    msgData.conversation ||
+    msgData.extendedTextMessage?.text ||
+    msgData.imageMessage?.caption ||
+    msgData.audioMessage?.caption ||
+    'Mensagem de áudio recebida via WhatsApp';
+
+  return {
+    customerName: pushName,
+    phone,
+    city: 'Natividade - RJ',
+    productLine: 'furniture',
+    message: messageText,
+    mediaType: msgData.imageMessage ? 'image' : msgData.audioMessage ? 'audio' : undefined,
+    mediaUrl: undefined,
+  };
+}
+
+// 1. Gateway Status Endpoint
+app.get('/api/whatsapp/status', (req, res) => {
+  try {
+    const messages = dbService.getWhatsAppMessages(20);
+    res.json({
+      success: true,
+      gateway: {
+        instanceName: 'woodbit-marcenaria-natividade',
+        status: 'connected',
+        driver: 'Evolution API / Baileys WebSocket',
+        webhookUrl: '/api/whatsapp/webhook',
+        aiTriageEngine: 'Google Gemma 4 12B QAT (LM Studio)',
+      },
+      recentMessages: messages,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Real Webhook Endpoint (Evolution API / Baileys)
+app.post('/api/whatsapp/webhook', async (req, res) => {
+  try {
+    const payload = parseWhatsAppPayload(req.body);
+    console.log(`[WoodBit WhatsApp] Incoming message from ${payload.customerName} (${payload.phone}): "${payload.message}"`);
+
+    // Run automated Gemma 4 Local AI triage on the customer message
+    const triageResult = await performLeadTriage(payload.customerName, payload.message, 'WhatsApp');
+
+    // Generate suggested answer for the workshop
+    const suggestedReply = `Olá ${payload.customerName.split(' ')[0]}! Aqui é da WoodBit Marcenaria e Fabricação Digital em Natividade. ` +
+      (triageResult.triage.needsTechnicalVisit
+        ? `Recebemos sua solicitação para ${triageResult.triage.category === 'gamer' ? 'seu setup gamer' : 'seu projeto'}! Podemos agendar uma visita técnica com trena a laser para tirar as medidas exatas?`
+        : `Recebemos sua mensagem! Já estamos estruturando seu pré-orçamento.`);
+
+    // Find existing lead by phone or create new one
+    const leads = dbService.getLeads();
+    let lead = leads.find((l: any) => l.phone.replace(/\D/g, '') === payload.phone.replace(/\D/g, ''));
+
+    const messageId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const newMsg = {
+      id: messageId,
+      sender: 'client',
+      content: payload.message,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      mediaType: payload.mediaType,
+      mediaUrl: payload.mediaUrl,
+      aiSummary: triageResult.triage.preliminaryNotes,
+    };
+
+    if (lead) {
+      lead.messages = [...(lead.messages || []), newMsg];
+      lead.aiTriage = triageResult.triage;
+      lead.notes = `${lead.notes || ''}\n[WhatsApp ${new Date().toLocaleDateString('pt-BR')}]: ${payload.message}`.trim();
+      lead.updatedAt = new Date().toISOString();
+      dbService.saveLead(lead);
+    } else {
+      lead = {
+        id: `lead-wa-${Date.now()}`,
+        tenantId: 'tenant-woodbit-rj',
+        customerName: payload.customerName,
+        phone: payload.phone,
+        city: payload.city,
+        productLine: triageResult.triage.category || payload.productLine,
+        stage: 'contact',
+        source: 'whatsapp',
+        budgetEstimate: triageResult.triage.category === 'gamer' ? 3500 : 8500,
+        notes: payload.message,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        aiTriage: triageResult.triage,
+        messages: [newMsg],
+      };
+      dbService.saveLead(lead);
+    }
+
+    // Log message to SQLite relational table
+    dbService.logWhatsAppMessage({
+      id: messageId,
+      leadId: lead.id,
+      phone: payload.phone,
+      sender: 'client',
+      content: payload.message,
+      mediaType: payload.mediaType,
+      mediaUrl: payload.mediaUrl,
+      aiSummary: triageResult.triage.preliminaryNotes,
+    });
+
+    // Record audit event
+    dbService.addAuditLog({
+      id: `audit-${Date.now()}`,
+      action: 'Recebeu Mensagem WhatsApp (Triagem Gemma 4 Automática)',
+      entityType: 'Lead',
+      entityId: lead.id,
+      actorName: 'Gemma 4 12B QAT (Local)',
+      actorRole: 'ai_engine',
+      details: `Cliente: ${payload.customerName} | Categoria: ${triageResult.triage.category} | Urgência: ${triageResult.triage.urgency}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    res.json({
+      success: true,
+      status: 'processed',
+      leadId: lead.id,
+      customerName: lead.customerName,
+      triage: triageResult.triage,
+      suggestedReply,
+      wasLocal: triageResult.wasLocal,
+    });
+  } catch (err: any) {
+    console.error('[WoodBit WhatsApp] Webhook error:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Send Outgoing WhatsApp Message
+app.post('/api/whatsapp/send', (req, res) => {
+  try {
+    const { leadId, phone, content } = req.body;
+    if (!content) {
+      return res.status(400).json({ success: false, error: 'Conteúdo da mensagem obrigatório' });
+    }
+
+    const messageId = `msg-out-${Date.now()}`;
+    const leads = dbService.getLeads();
+    const lead = leads.find((l: any) => l.id === leadId);
+
+    if (lead) {
+      const outMsg = {
+        id: messageId,
+        sender: 'agent',
+        content,
+        timestamp: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      };
+      lead.messages = [...(lead.messages || []), outMsg];
+      lead.updatedAt = new Date().toISOString();
+      dbService.saveLead(lead);
+    }
+
+    dbService.logWhatsAppMessage({
+      id: messageId,
+      leadId,
+      phone: phone || lead?.phone || '',
+      sender: 'agent',
+      content,
+    });
+
+    res.json({ success: true, messageId, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Vite & Static Server Setup

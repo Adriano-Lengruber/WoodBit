@@ -17,7 +17,7 @@ import { AuditView } from './components/audit/AuditView';
 import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { NewProjectModal } from './components/projects/NewProjectModal';
 import { ToastProvider, useToast } from './context/ToastContext';
-import { loadState, saveState } from './services/storage';
+import { loadState, saveState, hydrateFromSQLiteDatabase } from './services/storage';
 
 import {
   INITIAL_LEADS,
@@ -85,9 +85,20 @@ function AppContent() {
   useEffect(() => { saveState('activeView', activeView); }, [activeView]);
   useEffect(() => { saveState('selectedCity', selectedCity); }, [selectedCity]);
   useEffect(() => { saveState('userRole', userRole); }, [userRole]);
-  useEffect(() => { saveState('isDarkMode', isDarkMode); }, [isDarkMode]);
-
-  // Helper: Log audit action
+  // Initial SQLite database hydration with graceful offline fallback
+  useEffect(() => {
+    hydrateFromSQLiteDatabase().then((dbData) => {
+      if (dbData) {
+        if (dbData.leads) setLeads(dbData.leads);
+        if (dbData.projects) setProjects(dbData.projects);
+        if (dbData.quotes) setQuotes(dbData.quotes);
+        if (dbData.productionOrders) setProductionOrders(dbData.productionOrders);
+        if (dbData.inventory) setInventory(dbData.inventory);
+        if (dbData.finance) setFinance(dbData.finance);
+        if (dbData.auditLogs) setAuditLogs(dbData.auditLogs);
+      }
+    });
+  }, []);
   const logAudit = (action: string, entityType: string, entityId: string, details?: string) => {
     const newLog: AuditLog = {
       id: `audit-${Date.now()}`,

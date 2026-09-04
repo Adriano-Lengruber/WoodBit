@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ClipboardCheck,
   CheckCircle2,
@@ -15,10 +15,15 @@ import {
   Image as ImageIcon,
   Download,
   Zap,
-  Check
+  Check,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Smartphone
 } from 'lucide-react';
 import { Project } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { getOfflineQueueCount, flushOfflineSyncQueue } from '../../services/storage';
 
 interface FieldVisitViewProps {
   projects: Project[];
@@ -65,6 +70,51 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
   ]);
   const [newPhotoLabel, setNewPhotoLabel] = useState('');
   const [validationSuccess, setValidationSuccess] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [queueCount, setQueueCount] = useState(getOfflineQueueCount());
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  useEffect(() => {
+    const handleOnline = async () => {
+      setIsOnline(true);
+      const flushed = await flushOfflineSyncQueue();
+      setQueueCount(getOfflineQueueCount());
+      if (flushed > 0) {
+        showToast('Sincronização Concluída', `${flushed} registro(s) enviados para a oficina.`, 'success');
+      }
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setQueueCount(getOfflineQueueCount());
+      showToast('Modo Offline Ativo', 'Você está desconectado. Todas as medições estão sendo salvas localmente.', 'info');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Refresh queue count periodically
+    const interval = setInterval(() => {
+      setQueueCount(getOfflineQueueCount());
+    }, 3000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(interval);
+    };
+  }, [showToast]);
+
+  const handleManualSync = async () => {
+    setIsSyncing(true);
+    const flushed = await flushOfflineSyncQueue();
+    setQueueCount(getOfflineQueueCount());
+    setIsSyncing(false);
+    if (flushed > 0) {
+      showToast('Sincronizado!', `${flushed} dados enviados para o servidor SQLite.`, 'success');
+    } else {
+      showToast('Tudo Sincronizado', 'Não há medições pendentes para envio.', 'info');
+    }
+  };
 
   const handleAddPhoto = () => {
     if (!newPhotoLabel.trim()) return;
@@ -235,6 +285,50 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
             ))}
           </select>
         </div>
+      </div>
+
+      {/* PWA Mobile Offline Sync Banner */}
+      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-2xl beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-3">
+          <div className={`w-3 h-3 rounded-full flex-shrink-0 ${isOnline ? 'bg-[#7dd396] shadow-[0_0_8px_#7dd396]' : 'bg-[#fecc93] animate-pulse'}`}></div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[var(--text-main)] flex items-center gap-1.5">
+                {isOnline ? (
+                  <>
+                    <Wifi className="w-3.5 h-3.5 text-[#7dd396]" /> Servidor da Oficina Online
+                  </>
+                ) : (
+                  <>
+                    <WifiOff className="w-3.5 h-3.5 text-[#fecc93]" /> Modo Campo Offline (Gravando no Dispositivo)
+                  </>
+                )}
+              </span>
+              {queueCount > 0 && (
+                <span className="text-[11px] font-mono font-bold bg-[#fecc93]/20 text-[#fecc93] px-2 py-0.5 rounded-full border border-[#fecc93]/40">
+                  {queueCount} alteraç{queueCount > 1 ? 'ões' : 'ão'} na fila
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[var(--text-muted)] mt-0.5 flex items-center gap-1">
+              <Smartphone className="w-3 h-3 text-[var(--text-muted)]" /> PWA Standalone instalado no celular sincroniza fotos e checklists automaticamente ao reconectar ao Wi-Fi.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleManualSync}
+          disabled={isSyncing || !isOnline}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer self-start sm:self-auto ${
+            isOnline
+              ? 'bg-[var(--bg-low)] hover:bg-[var(--color-primary)] text-[var(--text-main)] hover:text-[#1b1715] border border-[var(--border-subtle)] shadow-xs'
+              : 'opacity-50 cursor-not-allowed bg-[var(--bg-low)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
+          }`}
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+          {isSyncing ? 'Sincronizando...' : 'Sincronizar com a Oficina'}
+        </button>
       </div>
 
       {/* Regional Filter Banner */}

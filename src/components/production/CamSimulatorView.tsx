@@ -20,9 +20,12 @@ import {
   FileCode,
   Layers,
   Settings2,
-  Check
+  Check,
+  Box,
+  Eye
 } from 'lucide-react';
 import { Machine } from '../../types';
+import { Interactive3DViewer } from '../3d/Interactive3DViewer';
 
 interface ToolItem {
   id: string;
@@ -61,6 +64,7 @@ export const CamSimulatorView: React.FC<CamSimulatorViewProps> = ({
   const [selectedToolId, setSelectedToolId] = useState<string>('t1');
   const [selectedMaterialId, setSelectedMaterialId] = useState<string>('mdf_18');
   const [maintenanceFeedback, setMaintenanceFeedback] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
   // Tool wear inventory
   const [toolInventory, setToolInventory] = useState<ToolItem[]>([
@@ -279,31 +283,71 @@ M30 (Fim de Programa)
               </h3>
             </div>
 
-            {/* Playback Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="convex-btn px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow"
-              >
-                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                {isPlaying ? 'Pausar Simulação' : 'Iniciar Simulação'}
-              </button>
+            {/* Playback Controls & 2D/3D Mode */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1 bg-[var(--bg-low)] p-1 rounded-lg border border-[var(--border-subtle)]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('3d')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${
+                    viewMode === '3d'
+                      ? 'bg-[var(--color-primary)] text-[#1b1715] shadow-xs'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  }`}
+                >
+                  <Box className="w-3.5 h-3.5" />
+                  3D Toolpath WebGL
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('2d')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-bold transition cursor-pointer ${
+                    viewMode === '2d'
+                      ? 'bg-[var(--color-primary)] text-[#1b1715] shadow-xs'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'
+                  }`}
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  2D Cinemático
+                </button>
+              </div>
 
-              <button
-                onClick={() => {
-                  setProgress(0);
-                  setIsPlaying(false);
-                }}
-                className="p-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer border border-[var(--border-subtle)]"
-                title="Reiniciar percurso"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
+              {viewMode === '2d' && (
+                <>
+                  <button
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    className="convex-btn px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow"
+                  >
+                    {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                    {isPlaying ? 'Pausar' : 'Simular'}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setProgress(0);
+                      setIsPlaying(false);
+                    }}
+                    className="p-1.5 rounded-lg bg-[var(--bg-low)] hover:bg-[var(--bg-high)] text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer border border-[var(--border-subtle)]"
+                    title="Reiniciar percurso"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Graphical Toolpath Canvas */}
-          <div className="relative bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] p-4 h-80 flex items-center justify-center overflow-hidden debossed">
+          {viewMode === '3d' ? (
+            <div className="bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] overflow-hidden shadow-inner">
+              <Interactive3DViewer
+                initialModel="toolpath_wireframe"
+                height="340px"
+                showControls={true}
+              />
+            </div>
+          ) : (
+            /* Graphical Toolpath Canvas */
+            <div className="relative bg-[var(--bg-low)] rounded-xl border border-[var(--border-subtle)] p-4 h-80 flex items-center justify-center overflow-hidden debossed">
             {/* Grid Lines */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,var(--border-subtle)_1px,transparent_1px),linear-gradient(to_bottom,var(--border-subtle)_1px,transparent_1px)] bg-[size:24px_24px] opacity-30"></div>
 
@@ -350,6 +394,7 @@ M30 (Fim de Programa)
               Passo Z: -6.0mm (Passada {activeLayer}/3)
             </div>
           </div>
+          )}
 
           {/* Progress and Live Stats */}
           <div className="space-y-2">

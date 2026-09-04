@@ -1,0 +1,41 @@
+{
+  "name": "WoodBit ERP — Fabricação Digital & Marcenaria",
+  "short_name": "WoodBit",
+  "description": "ERP para Marcenaria e Fabricação Digital (CNC + Impressão 3D) com IA Local-First, Medição Técnica Offline e PCP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#161311",
+  "theme_color": "#161311",
+  "orientation": "any",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Medição Técnica",
+      "short_name": "Medição",
+      "description": "Acesso rápido à medição de campo offline no cliente",
+      "url": "/?tab=field",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Orçamentos",
+      "short_name": "Orçamentos",
+      "description": "Calculadora e propostas comerciais",
+      "url": "/?tab=quotes",
+      "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -12,10 +12,13 @@ import {
   Lightbulb,
   Type,
   Palette,
-  Download
+  Download,
+  Box,
+  Eye
 } from 'lucide-react';
 import { CatalogProduct, ProductionOrder } from '../../types';
 import { useToast } from '../../context/ToastContext';
+import { Interactive3DViewer } from '../3d/Interactive3DViewer';
 
 interface CatalogViewProps {
   products: CatalogProduct[];
@@ -40,6 +43,7 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
     'Organizador Cabos Magnético',
   ]);
   const [orderCreatedSuccess, setOrderCreatedSuccess] = useState(false);
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
   // Price calculations
   let basePrice = selectedProduct.basePrice;
@@ -188,72 +192,116 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 6 Cols: Interactive Visual Preview Canvas */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-2xl p-6 relative overflow-hidden beveled-card flex flex-col items-center justify-center min-h-[420px] shadow-sm">
-            {/* Ambient LED Glow Effect */}
-            {hasLed && (
-              <div
-                className={`absolute inset-0 opacity-30 blur-3xl pointer-events-none transition-colors duration-500 ${
-                  ledColor === 'amber'
-                    ? 'bg-[var(--color-primary)]'
-                    : ledColor === 'cyan'
-                    ? 'bg-[#38bdf8]'
-                    : 'bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500'
-                }`}
-              ></div>
-            )}
-
-            {/* Product Rendering Visual Representation */}
-            <div className="relative z-10 w-full max-w-md space-y-4 text-center">
-              {/* Product Realistic Mock Card */}
-              <div
-                className={`w-full h-48 rounded-2xl border-2 shadow-2xl p-4 flex flex-col justify-between transition-all duration-300 relative overflow-hidden ${
-                  finish === 'mdf_preto'
-                    ? 'bg-[#18181b] border-[#3f3f46] text-white'
-                    : finish === 'freijo'
-                    ? 'bg-gradient-to-r from-[#452c1e] to-[#6d4630] border-[var(--color-primary)]/60 text-[#fdecd8] wood-grain'
-                    : 'bg-[#5c4a3b] border-[#a89078] text-[#fef9f3]'
+          {/* 2D / 3D Mode Toggle Bar */}
+          <div className="flex items-center justify-between bg-[var(--bg-container)] border border-[var(--border-subtle)] p-2 rounded-xl beveled-card">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setViewMode('3d')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  viewMode === '3d'
+                    ? 'bg-[var(--color-primary)] text-[#1b1715] shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)] bg-transparent'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase font-mono font-bold tracking-widest px-2.5 py-1 rounded-md bg-black/40 backdrop-blur">
-                    WoodBit • {size}cm
-                  </span>
-                  {hasLed && (
-                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-black/60 text-[var(--color-primary)] flex items-center gap-1.5 border border-[var(--color-primary)]/30">
-                      <Lightbulb className="w-3.5 h-3.5 text-[var(--color-primary)]" /> LED {ledColor.toUpperCase()}
+                <Box className="w-3.5 h-3.5" />
+                Preview 3D Interativo (WebGL)
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('2d')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  viewMode === '2d'
+                    ? 'bg-[var(--color-primary)] text-[#1b1715] shadow-xs'
+                    : 'text-[var(--text-muted)] hover:text-[var(--text-main)] bg-transparent'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Esquemático 2D
+              </button>
+            </div>
+            <span className="text-[11px] font-mono text-[var(--text-muted)] hidden sm:inline">
+              {viewMode === '3d' ? 'Gire com mouse/toque' : 'Vista ortogonal'}
+            </span>
+          </div>
+
+          {viewMode === '3d' ? (
+            <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden beveled-card shadow-sm">
+              <Interactive3DViewer
+                initialModel={selectedProduct.id === 'prod_suporte_headset' ? 'printed_stand' : 'gamer_desk'}
+                initialMaterial={finish === 'freijo' ? 'freijo' : finish === 'mdf_preto' ? 'grafite' : 'carvalho'}
+                height="420px"
+                showControls={true}
+              />
+            </div>
+          ) : (
+            <div className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-2xl p-6 relative overflow-hidden beveled-card flex flex-col items-center justify-center min-h-[420px] shadow-sm">
+              {/* Ambient LED Glow Effect */}
+              {hasLed && (
+                <div
+                  className={`absolute inset-0 opacity-30 blur-3xl pointer-events-none transition-colors duration-500 ${
+                    ledColor === 'amber'
+                      ? 'bg-[var(--color-primary)]'
+                      : ledColor === 'cyan'
+                      ? 'bg-[#38bdf8]'
+                      : 'bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500'
+                  }`}
+                ></div>
+              )}
+
+              {/* Product Rendering Visual Representation */}
+              <div className="relative z-10 w-full max-w-md space-y-4 text-center">
+                {/* Product Realistic Mock Card */}
+                <div
+                  className={`w-full h-48 rounded-2xl border-2 shadow-2xl p-4 flex flex-col justify-between transition-all duration-300 relative overflow-hidden ${
+                    finish === 'mdf_preto'
+                      ? 'bg-[#18181b] border-[#3f3f46] text-white'
+                      : finish === 'freijo'
+                      ? 'bg-gradient-to-r from-[#452c1e] to-[#6d4630] border-[var(--color-primary)]/60 text-[#fdecd8] wood-grain'
+                      : 'bg-[#5c4a3b] border-[#a89078] text-[#fef9f3]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase font-mono font-bold tracking-widest px-2.5 py-1 rounded-md bg-black/40 backdrop-blur">
+                      WoodBit • {size}cm
                     </span>
-                  )}
+                    {hasLed && (
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-black/60 text-[var(--color-primary)] flex items-center gap-1.5 border border-[var(--color-primary)]/30">
+                        <Lightbulb className="w-3.5 h-3.5 text-[var(--color-primary)]" /> LED {ledColor.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* CNC Engraved Text on Desk Surface */}
+                  <div className="my-auto text-center py-2">
+                    <span className="text-xs text-black/60 block font-mono font-bold uppercase tracking-wider mb-1">
+                      Gravação CNC Router em Baixo Relevo:
+                    </span>
+                    <span className="font-display font-black text-xl md:text-2xl tracking-wider text-black/80 drop-shadow-xs select-none">
+                      {engravingText || 'SEU TEXTO AQUI'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs font-medium text-white/90">
+                    <span>Espessura: 25mm Usinado</span>
+                    <span className="font-mono font-bold">{selectedAccessories.length} Acessórios 3D</span>
+                  </div>
                 </div>
 
-                {/* CNC Engraved Text on Desk Surface */}
-                <div className="my-auto text-center py-2">
-                  <span className="text-xs text-black/60 block font-mono font-bold uppercase tracking-wider mb-1">
-                    Gravação CNC Router em Baixo Relevo:
-                  </span>
-                  <span className="font-display font-black text-xl md:text-2xl tracking-wider text-black/80 drop-shadow-xs select-none">
-                    {engravingText || 'SEU TEXTO AQUI'}
-                  </span>
+                {/* 3D Printed Accessories Badges */}
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                  {selectedAccessories.map((acc, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-[var(--bg-container)] border border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-[var(--color-primary)]" /> {acc}
+                    </span>
+                  ))}
                 </div>
-
-                <div className="flex items-center justify-between text-xs font-medium text-white/90">
-                  <span>Espessura: 25mm Usinado</span>
-                  <span className="font-mono font-bold">{selectedAccessories.length} Acessórios 3D</span>
-                </div>
-              </div>
-
-              {/* 3D Printed Accessories Badges */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                {selectedAccessories.map((acc, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-[var(--bg-container)] border border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center gap-1.5 shadow-xs"
-                  >
-                    <Printer className="w-3.5 h-3.5 text-[var(--color-primary)]" /> {acc}
-                  </span>
-                ))}
               </div>
             </div>
-          </div>
+          )}
 
           {/* Pricing & Margin Summary Box */}
           <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 beveled-card shadow-sm">

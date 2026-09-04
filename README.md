@@ -25,8 +25,11 @@ Projetado estrategicamente para a realidade de marcenarias modernas e focado na 
 ## ⚡ Diferenciais Competitivos ("Por que o WoodBit?")
 
 - 🔒 **Privacidade Absoluta (Zero Cloud Leak)**: Fotos de quartos, cozinhas residenciais e dados de clientes são processados **100% offline na GPU da oficina**, sem envio para servidores de terceiros.
+- 💾 **Persistência em Banco Real SQLite Nativo (`node:sqlite`)**: Banco de dados relacional embarcado com modo WAL em `.data/woodbit.sqlite`. Arquitetura híbrida com sincronização offline e fila de mutações para trabalho em campo.
+- 🧊 **Visualizador 3D Interativo WebGL (Three.js)**: Renderização tridimensional em tempo real para o configurador paramétrico (Mesa Gamer, Suporte 3D PETG) e simulação cinemática 3D de percurso de ferramenta CNC (*Toolpaths* multi-passo).
+- 📱 **PWA Offline-First para o Marceneiro de Campo**: Aplicativo web progressivo instalável no celular/tablet do marceneiro para conferência in loco com trena e esquadro a laser, armazenando fotos e laudos offline com sincronização automática ao retornar ao Wi-Fi da oficina.
+- 💬 **Gateway WhatsApp com Triagem Autônoma (Evolution API / Baileys)**: Webhook em tempo real (`/api/whatsapp/webhook`) conectado ao CRM. A IA **Gemma 4 12B QAT** tria a mensagem recebida, calcula score do lead, detecta necessidade de visita técnica e sugere perguntas ao vendedor.
 - 💰 **R$ 0,00 por Token**: Motor de IA local com **Gemma 4 12B QAT** no LM Studio com visão computacional, raciocínio analítico e geração estruturada de JSON sem custos de API.
-- 📐 **Visão Computacional na Medição de Campo**: Análise fotográfica de ambientes com detecção prévia de interferências (canos, tomadas, desníveis de piso e colunas fora de prumo) com carimbo jurídico obrigatório de resguardo.
 - 🎙️ **Dite seu Orçamento por Voz (*Voice-to-Quote*)**: O marceneiro dita o projeto na bancada ou no cliente e a IA gera automaticamente a lista de corte de chapas, ferragens, horas de CNC e gramas de filamento 3D.
 - 🧩 **PCP Multi-Centro Integrado**: Controle sincronizado de chão de fábrica dividindo as Ordens de Produção (OPs) entre Marcenaria, Router CNC, Fazenda 3D, Montagem, Acabamento e Instalação Externa.
 - 📊 **Otimizador de Corte 2D com Orientação de Veio**: Reduz o desperdício de chapas de MDF (Louro Freijó, Branco TX, Grafite) calculando a sangria da serra (*kerf*) e aproveitando retalhos.
@@ -35,19 +38,36 @@ Projetado estrategicamente para a realidade de marcenarias modernas e focado na 
 
 ## 🏗️ Arquitetura de Software & IA Híbrida
 
-O WoodBit opera com um pipeline de resiliência em **4 camadas de tolerância a falhas**:
+O WoodBit opera com uma arquitetura **Local-First Resiliente** e tolerante a falhas:
 
 ```mermaid
-flowchart LR
-    A[Usuário / Chão de Fábrica] --> B[WoodBit ERP Engine\nExpress + Vite SPA]
-    B --> C{1. LM Studio Local\nGemma 4 12B QAT}
-    C -->|Sucesso| Z[Resposta Estruturada]
-    C -->|Timeout / Offline| D{2. Ollama Local\nQwen / DeepSeek}
-    D -->|Sucesso| Z
-    D -->|Timeout / Offline| E{3. Google Gemini\ngemini-3.7-flash}
-    E -->|Sucesso| Z
-    E -->|Sem Chave / Offline| F[4. Motor de Regras Local\nEmbedded Logic]
-    F --> Z
+flowchart TD
+    subgraph Cliente["📱 Cliente / PWA / Oficina"]
+        UI[Interface React 19 + Three.js 3D]
+        SW[Service Worker Offline Cache]
+        LS[(Fila Local / LocalStorage)]
+    end
+
+    subgraph Backend["💻 Servidor Local WoodBit (Node 24)"]
+        API[Express REST API]
+        DB[(SQLite Nativo WAL\n.data/woodbit.sqlite)]
+        WH[Webhook WhatsApp\nEvolution API / Baileys]
+    end
+
+    subgraph IA["🧠 Motores de IA"]
+        LM[1. LM Studio Local\nGemma 4 12B QAT]
+        OL[2. Ollama Local\nQwen / DeepSeek]
+        GEM[3. Google Gemini Cloud\ngemini-3.7-flash]
+    end
+
+    UI <--> SW
+    UI <--> LS
+    UI <-->|Sync Online| API
+    WH --> API
+    API <--> DB
+    API --> LM
+    LM -.->|Fallback| OL
+    OL -.->|Fallback| GEM
 ```
 
 ---
@@ -57,18 +77,19 @@ flowchart LR
 | Ícone | Módulo | Descrição Funcional |
 | :---: | :--- | :--- |
 | 📊 | **Dashboard Executivo** | Indicadores de faturamento, OPs ativas, ocupação de máquinas, leads no funil e alternância de temas (Dark Titanium / Light Natural Wood). |
-| 💬 | **CRM & Funil WhatsApp** | Kanban de vendas com **Triagem Inteligente** (urgência, complexidade, se exige visita técnica e perguntas pré-formatadas). |
+| 💬 | **CRM & WhatsApp Gateway** | Kanban de vendas com webhook Evolution API / Baileys e **Triagem em Tempo Real via Gemma 4 12B QAT**. |
 | 🏭 | **PCP Multi-Centro** | Chão de fábrica com telemetria de Router CNC, Impressoras 3D, Coladeiras de Borda e Seccionadoras com histórico de manutenção. |
+| 🕹️ | **Visualizador 3D & Catálogo** | Configurador paramétrico 3D WebGL (Three.js) de mesas gamer e acessórios 3D com disparo de OP direto para produção. |
+| ⚙️ | **Simulador CAM 2.5D/3D** | Pré-visualização 3D de trajetórias de fresamento (Toolpaths), monitor de desgaste de fresas e exportação de G-code (.TAP). |
 | 📐 | **Otimizador de Corte 2D** | Plano de corte interativo com cálculo de perda percentual, espessura de lâmina (*kerf*) e respeito aos veios do MDF amadeirado. |
 | 💵 | **Orçamentos & Custos** | Engenharia paramétrica de custos com alerta de margem de sobrevivência (< 25%) e suporte a ditar orçamentos por voz. |
 | 🗄️ | **Projetos & Ambientes** | Versionamento de projetos, checklist de cômodos, cálculo de risco e fotos técnicas. |
-| 🕹️ | **Configurador Gamer & Decor** | Catálogo paramétrico de mesas gamer, nichos acústicos e suportes com disparo de OP direto para o chão de fábrica. |
 | 📦 | **Estoque & Materiais** | Controle de chapas MDF (6mm a 25mm), filamentos 3D (PLA/PETG/ABS/TPU) e ferragens com alerta de estoque crítico. |
 | 💳 | **Gestão Financeira** | Contas a pagar/receber vinculadas aos centros de custo (Marcenaria, CNC, Impressão 3D e Geral). |
-| 📏 | **Medição de Campo** | Checklist minucioso para visita técnica (prumo, esquadro, pontos de água/esgoto/gás, abertura de portas) e fotos. |
+| 📱 | **Medição Técnica PWA** | Checklist offline para celular/tablet com conferência a laser (prumo, esquadro, pontos elétricos/hidráulicos) e sincronização automática. |
 | 🌐 | **Portal do Cliente** | Interface de transparência para o cliente acompanhar o progresso fotográfico da fabricação do seu móvel em tempo real. |
 | 🧠 | **Laboratório de IA** | Descoberta automática de modelos locais, benchmarks de velocidade e latência e testes de visão computacional. |
-| 🛡️ | **Auditoria & LGPD** | Trilha imutável de eventos com controle de acesso por papéis (*RBAC*). |
+| 🛡️ | **Auditoria & LGPD** | Trilha imutável de eventos gravada no SQLite com controle de acesso por papéis (*RBAC*). |
 
 ---
 

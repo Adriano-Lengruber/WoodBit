@@ -12,10 +12,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Public+Sans:ital,wght@0,300..700;1,300..700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#161311" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="WoodBit" />
+    <link rel="apple-touch-icon" href="/icon-192.svg" />
   </head>
   <body class="bg-[#161311] text-[#eae1dd] font-sans antialiased selection:bg-[#fecc93]/20 selection:text-[#fecc93]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((reg) => {
+            console.log('[WoodBit PWA] Service Worker registrado com escopo:', reg.scope);
+          }).catch((err) => {
+            console.log('[WoodBit PWA] Falha ao registrar Service Worker:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
 

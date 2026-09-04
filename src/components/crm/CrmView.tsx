@@ -27,6 +27,7 @@ import {
   CheckSquare
 } from 'lucide-react';
 import { Lead, LeadStage, ProductLine, WhatsAppMessage } from '../../types';
+import { WhatsAppGatewayModal } from './WhatsAppGatewayModal';
 
 interface CrmViewProps {
   leads: Lead[];
@@ -85,6 +86,7 @@ export const CrmView: React.FC<CrmViewProps> = ({
   const [selectedLead, setSelectedLead] = useState<Lead | null>(leads[0] || null);
   const [activeTagFilter, setActiveTagFilter] = useState<string>('all');
   const [showNewLeadModal, setShowNewLeadModal] = useState(false);
+  const [showWhatsAppGatewayModal, setShowWhatsAppGatewayModal] = useState(false);
   const [newMessageText, setNewMessageText] = useState('');
   const [isAiTriaging, setIsAiTriaging] = useState(false);
   const [aiSuggestedReply, setAiSuggestedReply] = useState<string | null>(null);
@@ -345,6 +347,15 @@ export const CrmView: React.FC<CrmViewProps> = ({
               CNC & 3D
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowWhatsAppGatewayModal(true)}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#7dd396] border border-[#25D366]/40 cursor-pointer shadow-xs transition"
+          >
+            <MessageSquare className="w-4 h-4 text-[#25D366]" />
+            Gateway WhatsApp (Evolution / Baileys)
+          </button>
 
           <button
             id="btn-add-lead"
@@ -892,6 +903,16 @@ export const CrmView: React.FC<CrmViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* WhatsApp Gateway Evolution API / Baileys Modal */}
+      <WhatsAppGatewayModal
+        isOpen={showWhatsAppGatewayModal}
+        onClose={() => setShowWhatsAppGatewayModal(false)}
+        onLeadReceived={(newLead) => {
+          onUpdateLeads([newLead, ...leads]);
+          setSelectedLead(newLead);
+        }}
+      />
     </div>
   );
 };
