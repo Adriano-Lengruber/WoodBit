@@ -16,6 +16,7 @@ import { AIOperationsView } from './components/ai/AIOperationsView';
 import { AuditView } from './components/audit/AuditView';
 import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { NewProjectModal } from './components/projects/NewProjectModal';
+import { HelpModal } from './components/help/HelpModal';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { loadState, saveState, hydrateFromSQLiteDatabase } from './services/storage';
 
@@ -58,6 +59,7 @@ function AppContent() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isAiModalOpen, setIsAiModalOpen] = useState<boolean>(false);
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState<boolean>(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState<boolean>(false);
 
   // Core Data States initialized with persistent store
   const [leads, setLeads] = useState<Lead[]>(() => loadState('leads', INITIAL_LEADS));
@@ -207,6 +209,7 @@ function AppContent() {
           selectedCity={selectedCity}
           onSelectCity={setSelectedCity}
           onOpenAiAssistant={() => setIsAiModalOpen(true)}
+          onOpenHelp={() => setIsHelpModalOpen(true)}
           userRole={userRole}
           isDarkMode={isDarkMode}
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}
@@ -344,6 +347,16 @@ function AppContent() {
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
         onCreateProjectAndQuote={handleCreateProjectAndQuote}
+      />
+
+      {/* User Manual & Help Modal */}
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        onNavigateToView={(viewId) => {
+          setActiveView(viewId);
+          setIsHelpModalOpen(false);
+        }}
       />
     </div>
   );

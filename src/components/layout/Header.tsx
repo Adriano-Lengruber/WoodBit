@@ -8,7 +8,8 @@ import {
   Sun,
   Menu,
   CheckCircle2,
-  Radio
+  Radio,
+  BookOpen
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -16,6 +17,7 @@ interface HeaderProps {
   selectedCity: string;
   onSelectCity: (city: string) => void;
   onOpenAiAssistant: () => void;
+  onOpenHelp?: () => void;
   userRole: UserRole;
   isDarkMode: boolean;
   onToggleTheme: () => void;
@@ -28,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   selectedCity,
   onSelectCity,
   onOpenAiAssistant,
+  onOpenHelp,
   userRole,
   isDarkMode,
   onToggleTheme,
@@ -133,6 +136,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
           <span>Gemma 4 Local</span>
         </button>
+
+        {/* User Manual & Help Modal Button */}
+        {onOpenHelp && (
+          <button
+            onClick={onOpenHelp}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-container)] hover:bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 transition cursor-pointer text-xs font-bold shadow-xs"
+            title="Abrir Manual do Usuário & Guia Prático WoodBit"
+          >
+            <BookOpen className="w-4 h-4 text-[var(--color-primary)]" />
+            <span className="hidden sm:inline">Manual</span>
+          </button>
+        )}
 
         {/* Notifications Dropdown */}
         <div className="relative">

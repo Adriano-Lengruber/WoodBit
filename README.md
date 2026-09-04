@@ -145,6 +145,7 @@ Abra no seu navegador: 👉 **[http://localhost:3000](http://localhost:3000)**
 ## 📚 Documentação Adicional
 
 Acesse a suíte completa de documentação na pasta [`docs/`](docs/):
+- 📖 [**`docs/USER_MANUAL.md`**](docs/USER_MANUAL.md) — **Manual Oficial de Utilização & Guia Prático** (Passo a passo didático de todas as telas).
 - 🎯 [**`docs/PRODUCT_OVERVIEW.md`**](docs/PRODUCT_OVERVIEW.md) — Apresentação Comercial, ROI e Proposta de Valor.
 - 🏛️ [**`docs/ARCHITECTURE.md`**](docs/ARCHITECTURE.md) — Arquitetura Técnica, Decisões de Engenharia e LGPD.
 - 🛠️ [**`docs/LOCAL_AI_SETUP.md`**](docs/LOCAL_AI_SETUP.md) — Manual Técnico de Parametrização do LM Studio.
