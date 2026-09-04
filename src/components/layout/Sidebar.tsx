@@ -16,7 +16,8 @@ import {
   Boxes,
   Scissors,
   Zap,
-  Radio
+  Radio,
+  ChevronRight
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -51,14 +52,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const sections: NavSection[] = [
     {
-      title: 'VISÃO GERAL',
+      title: 'Visão Geral',
       items: [
         { id: 'dashboard', label: 'Painel Central', icon: LayoutDashboard, badge: 'Hoje', badgeVariant: 'amber' },
-        { id: 'crm', label: 'Funil & Leads', icon: Kanban, badge: '4 leads', badgeVariant: 'amber' },
+        { id: 'crm', label: 'Funil & Leads WhatsApp', icon: Kanban, badge: '4 leads', badgeVariant: 'amber' },
       ],
     },
     {
-      title: 'ENGENHARIA & PCP',
+      title: 'Engenharia & PCP',
       items: [
         { id: 'production', label: 'Usinagem & 3D Lab', icon: Hammer, badge: '2 OPs', badgeVariant: 'emerald' },
         { id: 'cut_optimizer', label: 'Plano de Corte 2D', icon: Scissors, badge: 'Nesting', badgeVariant: 'neutral' },
@@ -67,7 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: 'COMERCIAL & GESTÃO',
+      title: 'Comercial & Gestão',
       items: [
         { id: 'quotes', label: 'Orçamentos & Margem', icon: FileText },
         { id: 'projects', label: 'Projetos & Ambientes', icon: Layers },
@@ -76,11 +77,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ],
     },
     {
-      title: 'INTELIGÊNCIA & CLIENTE',
+      title: 'Inteligência & Auditoria',
       items: [
-        { id: 'ai_operations', label: 'AI Gateway & Lab', icon: Cpu, isAi: true, badge: 'Local', badgeVariant: 'amber' },
+        { id: 'ai_operations', label: 'AI Gateway & Lab', icon: Cpu, isAi: true, badge: 'Gemma 4', badgeVariant: 'amber' },
         { id: 'client_portal', label: 'Portal do Cliente', icon: Globe },
-        { id: 'audit', label: 'Auditoria & Testes', icon: History },
+        { id: 'audit', label: 'Auditoria & Logs', icon: History },
       ],
     },
   ];
@@ -88,29 +89,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside
       id="woodbit-sidebar"
-      className="w-64 bg-[var(--bg-container)] border-r border-[var(--border-subtle)] flex flex-col justify-between h-screen shrink-0 sticky top-0 z-30 select-none overflow-y-auto transition-colors duration-200"
+      className="w-72 bg-[var(--bg-container)] border-r border-[var(--border-subtle)] flex flex-col justify-between h-screen shrink-0 sticky top-0 z-30 select-none overflow-y-auto transition-colors duration-200"
     >
       <div className="flex flex-col">
         {/* Brand Header */}
-        <div className="p-4 border-b border-[var(--border-subtle)] bg-[var(--bg-lowest)]/40">
-          <div className="flex items-center gap-3">
+        <div className="p-5 border-b border-[var(--border-subtle)] bg-[var(--bg-lowest)]/50">
+          <div className="flex items-center gap-3.5">
             <div className="relative group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#f5c27f] via-[#cf934b] to-[#7a4812] flex items-center justify-center shadow-lg shadow-[#cf934b]/20 text-[#1a0e02] font-black text-xl tracking-tight shrink-0 border border-[#f5c27f]/40">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#f59e0b] via-[#d97706] to-[#78350f] flex items-center justify-center shadow-lg shadow-[#d97706]/30 text-[#0c0802] font-black text-2xl tracking-tighter shrink-0 border border-[#fbbf24]/50">
                 W
               </div>
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-[#7dd396] border-2 border-[var(--bg-container)]"></span>
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#10b981] border-2 border-[var(--bg-container)]"></span>
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-display font-extrabold text-base tracking-tight text-[var(--text-main)]">
+              <div className="flex items-center gap-2">
+                <span className="font-display font-black text-lg tracking-tight text-[var(--text-main)]">
                   Wood<span className="text-[var(--color-primary)]">Bit</span>
                 </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-mono font-bold border border-[var(--color-primary)]/20">
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-mono font-bold border border-[var(--color-primary)]/30">
                   STUDIO
                 </span>
               </div>
-              <p className="text-[10px] text-[var(--text-muted)] font-mono uppercase tracking-wider mt-0.5 flex items-center gap-1">
-                <span>CNC</span> • <span>3D LAB</span> • <span>CAD</span>
+              <p className="text-xs text-[var(--text-muted)] font-mono font-semibold tracking-wide mt-0.5 flex items-center gap-1.5">
+                <span>CNC ROUTER</span> • <span>3D LAB</span> • <span>CAD</span>
               </p>
             </div>
           </div>
@@ -119,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             id="btn-new-project"
             onClick={onOpenNewProject}
-            className="convex-btn w-full mt-3.5 py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold cursor-pointer"
+            className="convex-btn w-full mt-4 py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Novo Projeto / Orçamento</span>
@@ -127,10 +128,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Grouped Navigation */}
-        <nav className="p-3 space-y-4">
+        <nav className="p-3.5 space-y-5">
           {sections.map((sec, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="text-[9px] font-mono uppercase tracking-wider text-[var(--text-faint)] px-2.5 font-bold block mb-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-primary)]/80 px-3 block mb-1.5 font-sans">
                 {sec.title}
               </span>
               {sec.items.map((item) => {
@@ -141,15 +142,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     key={item.id}
                     id={`nav-item-${item.id}`}
                     onClick={() => onSelectView(item.id)}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? 'bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/30 shadow-xs beveled-card'
+                        ? 'bg-[var(--bg-high)] text-[var(--color-primary)] border border-[var(--color-primary)]/40 shadow-sm beveled-card'
                         : 'text-[var(--text-muted)] hover:bg-[var(--bg-low)] hover:text-[var(--text-main)]'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 truncate">
+                    <div className="flex items-center gap-3 truncate">
                       <Icon
-                        className={`w-4 h-4 shrink-0 transition-colors ${
+                        className={`w-4.5 h-4.5 shrink-0 transition-colors ${
                           isActive
                             ? 'text-[var(--color-primary)]'
                             : item.isAi
@@ -162,13 +163,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                     {item.badge && (
                       <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded-full font-mono font-bold shrink-0 ${
+                        className={`text-xs px-2 py-0.5 rounded-full font-mono font-bold shrink-0 ${
                           item.badgeVariant === 'purple'
-                            ? 'bg-purple-950/60 text-purple-300 border border-purple-800/40'
+                            ? 'bg-purple-950/70 text-purple-300 border border-purple-800/50'
                             : item.badgeVariant === 'emerald'
-                            ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/40'
+                            ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-800/50'
                             : item.badgeVariant === 'amber'
-                            ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
+                            ? 'bg-[var(--color-primary-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/40'
                             : 'bg-[var(--bg-lowest)] text-[var(--text-muted)] border border-[var(--border-subtle)]'
                         }`}
                       >
@@ -184,27 +185,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer / User Profile & Role Switcher */}
-      <div className="p-3 border-t border-[var(--border-subtle)] bg-[var(--bg-lowest)]/60 space-y-2.5 shrink-0">
+      <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-lowest)]/70 space-y-3 shrink-0">
         {/* Quick AI Trigger */}
         <button
           id="btn-sidebar-quick-ai"
           onClick={onOpenAiAssistant}
-          className="w-full py-2 px-2.5 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/70 flex items-center justify-between text-xs text-[var(--color-primary)] font-semibold transition cursor-pointer shadow-xs group"
+          className="w-full py-2.5 px-3 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)] flex items-center justify-between text-xs text-[var(--color-primary)] font-bold transition cursor-pointer shadow-xs group"
         >
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] group-hover:rotate-12 transition-transform" />
-            <span className="text-[11px]">Assistente IA Copilot</span>
+            <Sparkles className="w-4 h-4 text-[var(--color-primary)] group-hover:rotate-12 transition-transform" />
+            <span className="text-xs">Copilot Studio Local (Gemma 4)</span>
           </div>
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-lowest)] text-[9px] text-[var(--text-muted)] font-mono border border-[var(--border-subtle)]">
+          <kbd className="px-2 py-0.5 rounded bg-[var(--bg-lowest)] text-xs text-[var(--text-muted)] font-mono border border-[var(--border-subtle)] font-bold">
             ⌘K
           </kbd>
         </button>
 
         {/* Role Switcher (RBAC) */}
-        <div className="bg-[var(--bg-low)] p-2 rounded-lg border border-[var(--border-subtle)]">
-          <div className="flex items-center justify-between text-[10px] text-[var(--text-muted)] mb-1 font-medium">
+        <div className="bg-[var(--bg-low)] p-2.5 rounded-xl border border-[var(--border-subtle)] space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-medium">
             <span>Perfil Operacional:</span>
-            <span className="font-bold uppercase text-[var(--color-primary)] text-[9px] font-mono">
+            <span className="font-bold uppercase text-[var(--color-primary)] font-mono text-[11px]">
               {userRole}
             </span>
           </div>
@@ -212,7 +213,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             id="select-user-role"
             value={userRole}
             onChange={(e) => onChangeRole(e.target.value as UserRole)}
-            className="w-full bg-[var(--bg-lowest)] border border-[var(--border-subtle)] text-[var(--text-main)] text-[11px] rounded-md py-1 px-2 focus:outline-none focus:border-[var(--color-primary)] font-medium cursor-pointer"
+            className="w-full bg-[var(--bg-lowest)] border border-[var(--border-subtle)] text-[var(--text-main)] text-xs rounded-lg py-1.5 px-2.5 focus:outline-none focus:border-[var(--color-primary)] font-semibold cursor-pointer"
           >
             <option value={UserRole.OWNER}>👑 Proprietário / Gestor</option>
             <option value={UserRole.PRODUCTION}>🔨 Gerente de PCP</option>
@@ -225,13 +226,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Telemetry Status Bar */}
-        <div className="flex items-center justify-between text-[10px] text-[var(--text-faint)] pt-0.5 font-mono px-1">
-          <span className="flex items-center gap-1">
-            <Radio className="w-3 h-3 text-[var(--color-primary)] animate-pulse" />
-            Polo Natividade
+        <div className="flex items-center justify-between text-xs text-[var(--text-faint)] font-mono px-1">
+          <span className="flex items-center gap-1.5">
+            <Radio className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
+            Polo Natividade / RJ
           </span>
-          <span className="flex items-center gap-1 text-[var(--color-secondary)] font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-secondary)]"></span>
+          <span className="flex items-center gap-1.5 text-[var(--color-secondary)] font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]"></span>
             Sync Ativo
           </span>
         </div>
@@ -239,4 +240,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
-

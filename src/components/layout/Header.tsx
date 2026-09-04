@@ -9,7 +9,8 @@ import {
   Cpu,
   Menu,
   Check,
-  Zap
+  Zap,
+  Radio
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -42,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
     {
       id: 'notif-1',
       title: 'OP-2026-042 em Usinagem CNC',
-      description: 'Painel da Cozinha Casa Silva atingiu 68% na CNC Router.',
+      description: 'Painel da Cozinha Casa Silva atingiu 68% na Router CNC Pro.',
       time: 'Há 12 min',
       type: 'production',
       unread: true,
@@ -68,44 +69,44 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       id="woodbit-header"
-      className="h-14 bg-[var(--bg-surface)]/90 backdrop-blur-md border-b border-[var(--border-subtle)] px-4 md:px-6 flex items-center justify-between sticky top-0 z-20 transition-colors duration-200"
+      className="h-16 bg-[var(--bg-surface)]/95 backdrop-blur-md border-b border-[var(--border-subtle)] px-5 md:px-8 flex items-center justify-between sticky top-0 z-20 transition-colors duration-200"
     >
       {/* Left: Mobile menu toggle & Search */}
-      <div className="flex items-center gap-3 flex-1 max-w-xl">
+      <div className="flex items-center gap-4 flex-1 max-w-xl">
         <button
           id="btn-mobile-menu"
           onClick={onToggleMobileMenu}
-          className="md:hidden p-1.5 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[var(--text-main)] hover:bg-[var(--bg-high)] cursor-pointer"
+          className="md:hidden p-2 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[var(--text-main)] hover:bg-[var(--bg-high)] cursor-pointer"
         >
-          <Menu className="w-4 h-4" />
+          <Menu className="w-5 h-5" />
         </button>
 
         <div className="relative w-full max-w-md group">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-faint)] group-focus-within:text-[var(--color-primary)] transition-colors" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)] group-focus-within:text-[var(--color-primary)] transition-colors" />
           <input
             id="global-search-input"
             type="text"
             placeholder="Buscar projetos, clientes, OPs, materiais ou códigos..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-[var(--bg-lowest)] border border-[var(--border-subtle)] rounded-lg pl-8 pr-8 py-1.5 text-xs text-[var(--text-main)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--color-primary)] transition"
+            className="w-full bg-[var(--bg-lowest)] border border-[var(--border-subtle)] rounded-xl pl-10 pr-9 py-2 text-sm text-[var(--text-main)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--color-primary)] transition"
           />
-          <kbd className="hidden sm:inline-block absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[9px] font-mono text-[var(--text-faint)]">
+          <kbd className="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded-md bg-[var(--bg-container)] border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-faint)]">
             /
           </kbd>
         </div>
       </div>
 
       {/* Right: Actions, Regional Hub, AI Status, Theme & Profile */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      <div className="flex items-center gap-3 sm:gap-4">
         {/* City / Hub Selector */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/40 text-xs text-[var(--text-muted)] transition shadow-xs">
-          <MapPin className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-xs text-[var(--text-muted)] transition shadow-xs">
+          <MapPin className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
           <select
             id="select-city-hub"
             value={selectedCity}
             onChange={(e) => onSelectCity(e.target.value)}
-            className="bg-transparent text-[11px] text-[var(--text-main)] font-semibold focus:outline-none cursor-pointer max-w-[110px] sm:max-w-none"
+            className="bg-transparent text-xs text-[var(--text-main)] font-bold focus:outline-none cursor-pointer max-w-[120px] sm:max-w-none"
           >
             <option value="all" className="bg-[var(--bg-container)] text-[var(--text-main)]">
               Todos os Polos (RJ)
@@ -125,62 +126,52 @@ export const Header: React.FC<HeaderProps> = ({
           </select>
         </div>
 
-        {/* AI Gateway Status Pill */}
+        {/* AI Model Status Badge */}
         <button
-          id="btn-ai-status-pill"
           onClick={onOpenAiAssistant}
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-container)] hover:bg-[var(--bg-high)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-[11px] font-semibold text-[var(--color-primary)] transition cursor-pointer shadow-xs group"
-          title="Clique para abrir o assistente de IA WoodBit"
+          className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--color-primary-container)]/80 text-[var(--color-primary)] border border-[var(--color-primary)]/40 hover:bg-[var(--color-primary-container)] transition cursor-pointer text-xs font-bold"
+          title="Gemma 4 12B QAT ativo localmente"
         >
-          <Sparkles className="w-3 h-3 group-hover:rotate-12 transition-transform" />
-          <span className="truncate">Copilot IA</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-secondary)] pulse-glow-emerald shrink-0"></span>
+          <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
+          <span>Gemma 4 Local</span>
         </button>
 
-        {/* AI Quick Prompt CTA for Mobile */}
-        <button
-          id="btn-header-ai-quick"
-          onClick={onOpenAiAssistant}
-          className="flex sm:hidden p-1.5 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[var(--color-primary)] cursor-pointer"
-          title="Assistente IA"
-        >
-          <Sparkles className="w-4 h-4" />
-        </button>
-
-        {/* Notifications Popover Toggle */}
+        {/* Notifications Dropdown */}
         <div className="relative">
           <button
             id="btn-notifications"
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-1.5 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-high)] relative cursor-pointer transition"
-            title="Notificações"
+            className="relative p-2 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-[var(--text-main)] transition cursor-pointer"
           >
-            <Bell className="w-3.5 h-3.5" />
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"></span>
+            <Bell className="w-4.5 h-4.5" />
+            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] pulse-glow-amber"></span>
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl shadow-2xl p-3 z-50 beveled-card animate-in fade-in slide-in-from-top-2">
-              <div className="flex items-center justify-between pb-2 border-b border-[var(--border-subtle)]">
-                <span className="font-display font-semibold text-xs text-[var(--text-main)] flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-[var(--color-primary)]" />
-                  Notificações Operacionais
+            <div className="absolute right-0 mt-2.5 w-80 sm:w-96 rounded-2xl bg-[var(--bg-container)] border border-[var(--border-subtle)] shadow-2xl z-50 p-4 space-y-3 beveled-card animate-in fade-in">
+              <div className="flex items-center justify-between pb-2.5 border-b border-[var(--border-subtle)]">
+                <span className="font-display font-bold text-sm text-[var(--text-main)]">
+                  Notificações de Chão de Fábrica
                 </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-mono font-bold">
-                  2 novas
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-bold">
+                  2 não lidas
                 </span>
               </div>
-              <div className="divide-y divide-[var(--border-subtle)]/50 max-h-64 overflow-y-auto mt-1">
+              <div className="space-y-2.5 max-h-72 overflow-y-auto">
                 {notifications.map((n) => (
-                  <div key={n.id} className="py-2.5 text-left group hover:bg-[var(--bg-low)] px-1 rounded transition">
-                    <div className="flex items-start justify-between gap-1">
-                      <p className="text-xs font-semibold text-[var(--text-main)]">{n.title}</p>
-                      {n.unread && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] shrink-0 mt-1"></span>}
+                  <div
+                    key={n.id}
+                    className={`p-3 rounded-xl border text-xs space-y-1 transition ${
+                      n.unread
+                        ? 'bg-[var(--bg-low)] border-[var(--color-primary)]/30'
+                        : 'bg-[var(--bg-lowest)] border-[var(--border-subtle)] opacity-75'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-sm text-[var(--text-main)]">{n.title}</span>
+                      <span className="text-xs text-[var(--text-faint)] font-mono">{n.time}</span>
                     </div>
-                    <p className="text-[11px] text-[var(--text-muted)] mt-0.5 leading-snug">{n.description}</p>
-                    <span className="text-[9px] text-[var(--text-faint)] font-mono mt-1 block">
-                      {n.time}
-                    </span>
+                    <p className="text-xs text-[var(--text-muted)] leading-relaxed">{n.description}</p>
                   </div>
                 ))}
               </div>
@@ -188,21 +179,16 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
 
-        {/* Dark / Light Mode Toggle */}
+        {/* Theme Toggle */}
         <button
-          id="btn-toggle-theme"
+          id="btn-theme-toggle"
           onClick={onToggleTheme}
-          className="p-1.5 rounded-lg bg-[var(--bg-container)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--bg-high)] cursor-pointer transition flex items-center justify-center"
-          title={isDarkMode ? 'Alternar para Tema Claro (Artesanal)' : 'Alternar para Tema Escuro (Luxury Noir)'}
+          className="p-2 rounded-xl bg-[var(--bg-container)] border border-[var(--border-subtle)] hover:border-[var(--color-primary)]/50 text-[var(--text-main)] transition cursor-pointer"
+          title={isDarkMode ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
         >
-          {isDarkMode ? (
-            <Sun className="w-3.5 h-3.5 text-[#f5c27f] transition-transform duration-300 hover:rotate-45" />
-          ) : (
-            <Moon className="w-3.5 h-3.5 text-[#94591a] transition-transform duration-300 hover:-rotate-12" />
-          )}
+          {isDarkMode ? <Sun className="w-4.5 h-4.5 text-amber-400" /> : <Moon className="w-4.5 h-4.5 text-slate-700" />}
         </button>
       </div>
     </header>
   );
 };
-
