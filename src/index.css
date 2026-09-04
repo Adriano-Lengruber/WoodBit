@@ -2,35 +2,36 @@
 
 @layer base {
   :root {
-    /* WoodBit Organic Tech — Original Signature Palette */
-    --bg-surface: #0e0c0b;
-    --bg-lowest: #080706;
-    --bg-low: #14110f;
-    --bg-container: #1b1715;
-    --bg-high: #24201d;
-    --bg-highest: #302a27;
-    --bg-bright: #3d3531;
+    /* WoodBit Artisan Tech — Signature Behance Palette */
+    /* Primary Golden Amber: #F3A446 | Warm Chestnut: #A06235 | Deep Obsidian: #141313 | Surface Charcoal: #1D1D1D | Cream: #EFEFEF */
+    --bg-surface: #141313;
+    --bg-lowest: #0c0b0b;
+    --bg-low: #181717;
+    --bg-container: #1D1D1D;
+    --bg-high: #272626;
+    --bg-highest: #333232;
+    --bg-bright: #424040;
 
-    /* High-Legibility Warm Bone & Pearl Typography */
-    --text-main: #f5eeea;
-    --text-muted: #c4b5aa;
-    --text-faint: #8a7b70;
+    /* High-Legibility Linen Cream & Warm Typography */
+    --text-main: #EFEFEF;
+    --text-muted: #c8bebe;
+    --text-faint: #8e8383;
 
-    /* Delicate Warm Walnut & Hairline Borders */
-    --border-outline: #6e6054;
-    --border-subtle: #2f2722;
-    --border-card: rgba(245, 194, 127, 0.14);
+    /* Warm Chestnut & Amber Hairline Borders */
+    --border-outline: #5c4738;
+    --border-subtle: #2b2725;
+    --border-card: rgba(243, 164, 70, 0.16);
 
-    /* Original Warm Honey Amber / Golden Wood Tone */
-    --color-primary: #f5c27f;
-    --color-primary-hover: #ffd8a0;
-    --color-primary-container: #3d2404;
-    --text-on-primary: #241400;
+    /* Primary: Warm Amber Glow #F3A446 */
+    --color-primary: #F3A446;
+    --color-primary-hover: #ffba66;
+    --color-primary-container: rgba(243, 164, 70, 0.15);
+    --text-on-primary: #141313;
 
-    /* Digital Fabrication: Precision Sage Green & Accents */
-    --color-secondary: #7dd396;
-    --color-secondary-container: #14381b;
-    --color-tertiary: #f0ad73;
+    /* Secondary: Roasted Chestnut Wood #A06235 */
+    --color-secondary: #A06235;
+    --color-secondary-container: rgba(160, 98, 53, 0.22);
+    --color-tertiary: #F3A446;
     --color-error: #fca5a5;
     --color-error-container: #5c1414;
 
@@ -41,30 +42,30 @@
   }
 
   .light {
-    --bg-surface: #fbf8f4;
+    --bg-surface: #EFEFEF;
     --bg-lowest: #ffffff;
-    --bg-low: #f4ede4;
-    --bg-container: #ebe1d4;
-    --bg-high: #e0d4c5;
-    --bg-highest: #d5c6b5;
-    --bg-bright: #caa38a;
+    --bg-low: #e5e2df;
+    --bg-container: #dcd6d1;
+    --bg-high: #d1c9c2;
+    --bg-highest: #c4b9b0;
+    --bg-bright: #b3a59a;
 
-    --text-main: #1f1712;
-    --text-muted: #574639;
-    --text-faint: #857365;
+    --text-main: #141313;
+    --text-muted: #4a4440;
+    --text-faint: #736a64;
 
     --border-outline: #9e8979;
-    --border-subtle: #dbcbba;
-    --border-card: rgba(148, 89, 26, 0.14);
+    --border-subtle: #cbc3bb;
+    --border-card: rgba(160, 98, 53, 0.16);
 
-    --color-primary: #94591a;
-    --color-primary-hover: #7b4610;
-    --color-primary-container: #fde2be;
+    --color-primary: #A06235;
+    --color-primary-hover: #854f27;
+    --color-primary-container: #fae4d2;
     --text-on-primary: #ffffff;
 
-    --color-secondary: #246824;
-    --color-secondary-container: #bbf0b5;
-    --color-tertiary: #8f4f1a;
+    --color-secondary: #F3A446;
+    --color-secondary-container: #fef0df;
+    --color-tertiary: #A06235;
     --color-error: #b91c1c;
     --color-error-container: #fed7d7;
   }
@@ -126,19 +127,19 @@
   border: 1px solid var(--border-subtle);
 }
 
-/* Original Warm Honey Amber Convex Button */
+/* Signature Warm Golden Amber Convex Button (#F3A446) */
 .convex-btn {
-  background: linear-gradient(180deg, #e8b26e 0%, #cf934b 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 12px rgba(0, 0, 0, 0.4);
-  color: #1a0e02;
+  background: linear-gradient(180deg, #F3A446 0%, #cf852a 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.45), 0 3px 12px rgba(0, 0, 0, 0.45);
+  color: #141313;
   font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .convex-btn:hover {
-  background: linear-gradient(180deg, #f3c285 0%, #dc9e56 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 6px 18px rgba(232, 178, 110, 0.35);
+  background: linear-gradient(180deg, #ffba66 0%, #e09234 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6), 0 6px 20px rgba(243, 164, 70, 0.4);
   transform: translateY(-1px);
 }
 
@@ -148,13 +149,13 @@
 }
 
 .light .convex-btn {
-  background: linear-gradient(180deg, #a6621a 0%, #85480f 100%);
+  background: linear-gradient(180deg, #A06235 0%, #824b22 100%);
   color: #ffffff;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 3px 8px rgba(100, 60, 20, 0.2);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 3px 8px rgba(160, 98, 53, 0.25);
 }
 
 .light .convex-btn:hover {
-  background: linear-gradient(180deg, #b66f21 0%, #945314 100%);
+  background: linear-gradient(180deg, #b8733f 0%, #945628 100%);
 }
 
 /* Secondary Tactile Wood Button */

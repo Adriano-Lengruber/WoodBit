@@ -17,6 +17,7 @@ import { AuditView } from './components/audit/AuditView';
 import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { NewProjectModal } from './components/projects/NewProjectModal';
 import { HelpModal } from './components/help/HelpModal';
+import { LandingPageView } from './components/landing/LandingPageView';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { loadState, saveState, hydrateFromSQLiteDatabase } from './services/storage';
 
@@ -51,7 +52,12 @@ function AppContent() {
   const { showToast } = useToast();
 
   // Navigation & Role State
-  const [activeView, setActiveView] = useState<string>(() => loadState('activeView', 'dashboard'));
+  const [activeView, setActiveView] = useState<string>(() => {
+    if (typeof window !== 'undefined' && (window.location.search.includes('view=landing') || window.location.hash.includes('landing'))) {
+      return 'landing';
+    }
+    return loadState('activeView', 'dashboard');
+  });
   const [userRole, setUserRole] = useState<UserRole>(() => loadState('userRole', UserRole.OWNER));
   const [selectedCity, setSelectedCity] = useState<string>(() => loadState('selectedCity', 'all'));
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => loadState('isDarkMode', true));
@@ -184,6 +190,15 @@ function AppContent() {
     setActiveView('projects');
   };
 
+  // Dedicated Landing Page Mode (Full Page Commercial Presentation)
+  if (activeView === 'landing') {
+    return (
+      <div className={`min-h-screen bg-[#141313] text-[#EFEFEF] ${isDarkMode ? '' : 'light'}`}>
+        <LandingPageView onEnterApp={() => setActiveView('dashboard')} />
+      </div>
+    );
+  }
+
   return (
     <div
       id="woodbit-app-root"
@@ -210,6 +225,7 @@ function AppContent() {
           onSelectCity={setSelectedCity}
           onOpenAiAssistant={() => setIsAiModalOpen(true)}
           onOpenHelp={() => setIsHelpModalOpen(true)}
+          onOpenLanding={() => setActiveView('landing')}
           userRole={userRole}
           isDarkMode={isDarkMode}
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}

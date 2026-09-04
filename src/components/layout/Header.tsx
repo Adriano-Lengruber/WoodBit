@@ -9,7 +9,8 @@ import {
   Menu,
   CheckCircle2,
   Radio,
-  BookOpen
+  BookOpen,
+  Globe
 } from 'lucide-react';
 import { UserRole } from '../../types';
 
@@ -18,6 +19,7 @@ interface HeaderProps {
   onSelectCity: (city: string) => void;
   onOpenAiAssistant: () => void;
   onOpenHelp?: () => void;
+  onOpenLanding?: () => void;
   userRole: UserRole;
   isDarkMode: boolean;
   onToggleTheme: () => void;
@@ -31,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectCity,
   onOpenAiAssistant,
   onOpenHelp,
+  onOpenLanding,
   userRole,
   isDarkMode,
   onToggleTheme,
@@ -136,6 +139,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Sparkles className="w-3.5 h-3.5 text-[var(--color-primary)] animate-pulse" />
           <span>Gemma 4 Local</span>
         </button>
+
+        {/* Landing Page Link Button */}
+        {onOpenLanding && (
+          <button
+            onClick={onOpenLanding}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary)] text-[#141313] hover:brightness-110 transition cursor-pointer text-xs font-bold shadow-xs"
+            title="Visualizar Landing Page Comercial do WoodBit"
+          >
+            <Globe className="w-4 h-4 text-[#141313]" />
+            <span className="hidden sm:inline">Ver Site</span>
+          </button>
+        )}
 
         {/* User Manual & Help Modal Button */}
         {onOpenHelp && (

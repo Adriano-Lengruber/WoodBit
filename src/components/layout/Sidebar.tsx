@@ -75,6 +75,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'inventory', label: 'Estoque & Reservas', icon: Package },
         { id: 'finance', label: 'Financeiro & Custos', icon: DollarSign },
+      ],
+    },
+    {
+      title: 'Comunicação & Vendas',
+      items: [
+        { id: 'landing', label: 'Site / Landing Page', icon: Globe, badge: 'Behance', badgeVariant: 'amber' },
         { id: 'client_portal', label: 'Portal da Transparência', icon: Globe },
       ],
     },
