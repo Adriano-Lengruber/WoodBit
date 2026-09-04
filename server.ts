@@ -43,11 +43,63 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Helper for local Ollama / LM Studio calls with timeout
+// Helper for discovering active LM Studio models
+async function getLMStudioModels(): Promise<string[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const response = await fetch('http://localhost:1234/v1/models', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (data.data || []).map((m: any) => m.id);
+  } catch {
+    return [];
+  }
+}
+
+async function getLMStudioActiveModel(): Promise<string> {
+  const models = await getLMStudioModels();
+  if (!models || models.length === 0) return 'google/gemma-4-12b-qat';
+  // Specific priority for Gemma 4 12B QAT loaded in LM Studio
+  const gemmaQat = models.find(
+    (m) => m.toLowerCase().includes('gemma-4-12b-qat') || m.toLowerCase().includes('google/gemma-4-12b-qat')
+  );
+  if (gemmaQat) return gemmaQat;
+  const anyGemma4 = models.find((m) => m.toLowerCase().includes('gemma-4-12b'));
+  if (anyGemma4) return anyGemma4;
+  const anyGemma = models.find((m) => m.toLowerCase().includes('gemma'));
+  return anyGemma || models[0];
+}
+
+// Helper to safely extract JSON from LLM text responses (handles markdown fences and thought tokens)
+function extractJsonFromText<T>(text: string, fallback: T): T {
+  try {
+    if (!text || typeof text !== 'string') return fallback;
+    let cleaned = text.trim();
+    // Strip markdown code fences if present
+    const jsonBlockMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (jsonBlockMatch && jsonBlockMatch[1]) {
+      cleaned = jsonBlockMatch[1].trim();
+    } else {
+      const firstBrace = cleaned.indexOf('{');
+      const lastBrace = cleaned.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+      }
+    }
+    return JSON.parse(cleaned) as T;
+  } catch (err) {
+    console.warn('[WoodBit ERP] Failed to parse structured JSON from text:', err);
+    return fallback;
+  }
+}
+
+// Helper for local Ollama / LM Studio calls with realistic local model timeout (60s default)
 async function callLocalAI(
   endpoint: string,
   payload: any,
-  timeoutMs = 3500
+  timeoutMs = 60000
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -67,55 +119,109 @@ async function callLocalAI(
     return { success: true, data };
   } catch (err: any) {
     clearTimeout(timeoutId);
-    return { success: false, error: err?.name === 'AbortError' ? 'Timeout' : err?.message || 'Local AI not responding' };
+    return {
+      success: false,
+      error: err?.name === 'AbortError' ? `Timeout após ${timeoutMs}ms` : err?.message || 'Local AI not responding',
+    };
   }
 }
 
-// 1. AI Chat & Gateway Route
+// Discovery endpoint for active local and cloud models
+app.get('/api/ai/models', async (req, res) => {
+  const lmStudioModels = await getLMStudioModels();
+  let ollamaModels: string[] = [];
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const oRes = await fetch('http://localhost:11434/api/tags', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (oRes.ok) {
+      const oData = await oRes.json();
+      ollamaModels = (oData.models || []).map((m: any) => m.name);
+    }
+  } catch {}
+
+  const activeLMStudio = await getLMStudioActiveModel();
+
+  res.json({
+    lmStudio: {
+      online: lmStudioModels.length > 0,
+      models: lmStudioModels,
+      activeModel: activeLMStudio,
+    },
+    ollama: {
+      online: ollamaModels.length > 0,
+      models: ollamaModels,
+      activeModel: ollamaModels[0] || null,
+    },
+    geminiConfigured: !!process.env.GEMINI_API_KEY,
+  });
+});
+
+// 1. AI Chat & Gateway Route (Local-First: LM Studio / Ollama -> Gemini -> Rule Engine)
 app.post('/api/ai/chat', async (req, res) => {
   const { prompt, systemInstruction, preferredProvider, model, toolsContext } = req.body;
   const startTime = Date.now();
 
-  // Try local first if requested or by default
+  const normProvider = (preferredProvider || '').toLowerCase().replace('-', '_');
+  const wantsLmStudio = normProvider === 'lm_studio' || normProvider === 'lmstudio';
+  const wantsOllama = normProvider === 'ollama';
+
   let resultText = '';
-  let providerUsed = preferredProvider || 'local_or_gemini';
-  let modelUsed = model || 'qwen2.5-coder:7b';
+  let providerUsed = preferredProvider || 'local_first';
+  let modelUsed = model || '';
   let wasLocal = false;
 
-  // If local Ollama requested/tried
-  if (preferredProvider === 'ollama') {
-    const localRes = await callLocalAI('http://localhost:11434/api/generate', {
-      model: model || 'qwen2.5-coder:7b',
-      prompt: `${systemInstruction ? `[Sistema: ${systemInstruction}]\n\n` : ''}${prompt}`,
-      stream: false,
-    });
+  // 1. If LM Studio requested or primary
+  if (wantsLmStudio || (!wantsOllama && normProvider !== 'gemini')) {
+    const lmModel = model || (await getLMStudioActiveModel());
+    const lmRes = await callLocalAI(
+      'http://localhost:1234/v1/chat/completions',
+      {
+        model: lmModel,
+        messages: [
+          ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
+          { role: 'user', content: prompt },
+        ],
+        max_tokens: 2048,
+        temperature: 0.7,
+      },
+      60000
+    );
+
+    if (lmRes.success && lmRes.data?.choices?.[0]?.message) {
+      const msg = lmRes.data.choices[0].message;
+      resultText = msg.content || msg.reasoning_content || '';
+      if (resultText) {
+        wasLocal = true;
+        providerUsed = 'lm_studio';
+        modelUsed = lmModel;
+      }
+    }
+  }
+
+  // 2. If Ollama requested or fallback from LM Studio
+  if (!resultText && (wantsOllama || normProvider === 'local_first')) {
+    const ollamaModel = model || 'qwen2.5-coder:7b';
+    const localRes = await callLocalAI(
+      'http://localhost:11434/api/generate',
+      {
+        model: ollamaModel,
+        prompt: `${systemInstruction ? `[Sistema: ${systemInstruction}]\n\n` : ''}${prompt}`,
+        stream: false,
+      },
+      35000
+    );
 
     if (localRes.success && localRes.data?.response) {
       resultText = localRes.data.response;
       wasLocal = true;
       providerUsed = 'ollama';
+      modelUsed = ollamaModel;
     }
   }
 
-  // If local LM Studio requested/tried
-  if (!resultText && preferredProvider === 'lm_studio') {
-    const lmRes = await callLocalAI('http://localhost:1234/v1/chat/completions', {
-      model: model || 'local-model',
-      messages: [
-        ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.7,
-    });
-
-    if (lmRes.success && lmRes.data?.choices?.[0]?.message?.content) {
-      resultText = lmRes.data.choices[0].message.content;
-      wasLocal = true;
-      providerUsed = 'lm_studio';
-    }
-  }
-
-  // Fallback to Gemini if no local model answered
+  // 3. Fallback to Gemini if no local model answered
   if (!resultText) {
     const ai = getGeminiClient();
     if (ai) {
@@ -134,14 +240,14 @@ app.post('/api/ai/chat', async (req, res) => {
         modelUsed = 'gemini-3.7-flash';
         wasLocal = false;
       } catch (err: any) {
-        console.error('Gemini error:', err);
+        console.error('[WoodBit ERP] Gemini error:', err);
         resultText = `Simulação WoodBit Assistant: Processado com sucesso com base nas diretrizes operacionais de marcenaria e fabricação digital. (Nota: ${err.message || 'Chave de API não disponível'}).`;
         providerUsed = 'woodbit_rule_engine';
         modelUsed = 'woodbit-embedded-logic';
         wasLocal = true;
       }
     } else {
-      // Deterministic rule engine fallback
+      // 4. Deterministic rule engine fallback
       resultText = `WoodBit Local Engine: Recebido o comando "${prompt.slice(0, 80)}...". Dados processados conforme os parâmetros técnicos de corte, CNC e impressão 3D da oficina de Natividade/RJ.`;
       providerUsed = 'woodbit_rule_engine';
       modelUsed = 'woodbit-embedded-logic';
@@ -161,12 +267,29 @@ app.post('/api/ai/chat', async (req, res) => {
   });
 });
 
-// 2. Lead Triage Structured Output
+// 2. Lead Triage Structured Output (Local-First with Gemma 4 / Ollama -> Gemini -> Rule Engine)
 app.post('/api/ai/triage-lead', async (req, res) => {
   const { customerName, text, origin } = req.body;
   const startTime = Date.now();
 
-  const ai = getGeminiClient();
+  const prompt = `Você é o classificador especialista do funil de vendas da WoodBit (Marcenaria + CNC + Impressão 3D em Natividade/RJ).
+Analise a mensagem de lead recebida:
+Cliente: ${customerName}
+Origem: ${origin || 'WhatsApp'}
+Mensagem/Briefing: "${text}"
+
+Retorne APENAS um objeto JSON no formato exato (sem explicações antes ou depois):
+{
+  "category": "furniture" | "gamer" | "digital_fab",
+  "urgency": "low" | "medium" | "high",
+  "estimatedComplexity": "low" | "medium" | "high",
+  "needsTechnicalVisit": boolean,
+  "missingInformation": ["item1", "item2"],
+  "suggestedQuestions": ["pergunta1", "pergunta2"],
+  "preliminaryNotes": "resumo conciso do briefing",
+  "confidence": 0.95
+}`;
+
   let triageResult = {
     category: 'furniture',
     urgency: 'medium',
@@ -179,28 +302,48 @@ app.post('/api/ai/triage-lead', async (req, res) => {
     ],
     preliminaryNotes: `Atendimento inicial para ${customerName || 'Cliente'}. Análise preliminar de viabilidade na oficina de Natividade/RJ.`,
     confidence: 0.92,
-    processedByModel: 'WoodBit Local Triage Engine',
+    processedByModel: 'WoodBit Local Rule Engine',
   };
 
+  // 1. Try LM Studio (Gemma 4)
+  const activeLMModel = await getLMStudioActiveModel();
+  const lmRes = await callLocalAI(
+    'http://localhost:1234/v1/chat/completions',
+    {
+      model: activeLMModel,
+      messages: [
+        {
+          role: 'system',
+          content: 'Retorne estritamente um JSON válido conforme solicitado pelo usuário.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.2,
+    },
+    30000
+  );
+
+  if (lmRes.success && lmRes.data?.choices?.[0]?.message) {
+    const rawContent = lmRes.data.choices[0].message.content || lmRes.data.choices[0].message.reasoning_content || '';
+    const parsed = extractJsonFromText(rawContent, null);
+    if (parsed) {
+      triageResult = {
+        ...triageResult,
+        ...parsed,
+        processedByModel: `${activeLMModel} (LM Studio Local)`,
+      };
+      return res.json({
+        triage: triageResult,
+        latencyMs: Date.now() - startTime,
+        wasLocal: true,
+      });
+    }
+  }
+
+  // 2. Try Gemini Cloud Fallback
+  const ai = getGeminiClient();
   if (ai) {
     try {
-      const prompt = `Analise a mensagem de lead recebida para a WoodBit (Marcenaria + CNC + Impressão 3D):
-Cliente: ${customerName}
-Origem: ${origin || 'WhatsApp'}
-Mensagem/Briefing: "${text}"
-
-Retorne APENAS um JSON válido no formato exato:
-{
-  "category": "furniture" | "gamer" | "digital_fab",
-  "urgency": "low" | "medium" | "high",
-  "estimatedComplexity": "low" | "medium" | "high",
-  "needsTechnicalVisit": boolean,
-  "missingInformation": ["item1", "item2"],
-  "suggestedQuestions": ["pergunta1", "pergunta2"],
-  "preliminaryNotes": "resumo conciso do briefing",
-  "confidence": 0.95
-}`;
-
       const response = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
         contents: prompt,
@@ -220,22 +363,41 @@ Retorne APENAS um JSON válido no formato exato:
         };
       }
     } catch (e) {
-      console.warn('Fallback to local triage logic', e);
+      console.warn('[WoodBit ERP] Fallback to local triage logic', e);
     }
   }
 
   res.json({
     triage: triageResult,
     latencyMs: Date.now() - startTime,
+    wasLocal: triageResult.processedByModel.includes('Local'),
   });
 });
 
-// 3. Voice to Quote Parser
+// 3. Voice to Quote Parser (Local-First with Gemma 4 -> Gemini -> Rule Engine)
 app.post('/api/ai/voice-to-quote', async (req, res) => {
   const { transcript } = req.body;
   const startTime = Date.now();
 
-  const ai = getGeminiClient();
+  const prompt = `O marceneiro ditou o seguinte áudio na oficina ou visita técnica:
+"${transcript}"
+
+Extraia os dados estruturados para orçamento da marcenaria e fabricação digital da WoodBit em JSON:
+{
+  "projectTitle": "título curto do projeto",
+  "roomName": "nome do ambiente",
+  "dimensions": { "width": 0, "height": 0, "depth": 0 },
+  "detectedMaterials": ["material1", "material2"],
+  "cncRequired": boolean,
+  "printing3DRequired": boolean,
+  "estimatedLaborHours": number,
+  "suggestedItems": [
+    { "description": "nome", "quantity": 1, "unit": "un/chapa/hora", "estimatedCost": 100 }
+  ],
+  "confidence": 0.95
+}
+Retorne APENAS o objeto JSON.`;
+
   let quoteData = {
     projectTitle: 'Projeto Derivado de Áudio do Marceneiro',
     roomName: 'Ambiente Principal',
@@ -250,28 +412,45 @@ app.post('/api/ai/voice-to-quote', async (req, res) => {
       { description: 'Horas de Usinagem CNC Router', quantity: 3, unit: 'hora', estimatedCost: 360 },
     ],
     confidence: 0.93,
+    processedByModel: 'WoodBit Local Rule Engine',
   };
 
+  // 1. Try LM Studio (Gemma 4)
+  const activeLMModel = await getLMStudioActiveModel();
+  const lmRes = await callLocalAI(
+    'http://localhost:1234/v1/chat/completions',
+    {
+      model: activeLMModel,
+      messages: [
+        { role: 'system', content: 'Retorne estritamente um JSON válido conforme solicitado.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.2,
+    },
+    30000
+  );
+
+  if (lmRes.success && lmRes.data?.choices?.[0]?.message) {
+    const rawContent = lmRes.data.choices[0].message.content || lmRes.data.choices[0].message.reasoning_content || '';
+    const parsed = extractJsonFromText(rawContent, null);
+    if (parsed) {
+      quoteData = {
+        ...quoteData,
+        ...parsed,
+        processedByModel: `${activeLMModel} (LM Studio Local)`,
+      };
+      return res.json({
+        quoteData,
+        latencyMs: Date.now() - startTime,
+        disclaimer: 'Dados extraídos via voz. O marceneiro deve conferir e validar os valores antes de emitir a proposta final.',
+      });
+    }
+  }
+
+  // 2. Try Gemini Cloud Fallback
+  const ai = getGeminiClient();
   if (ai && transcript) {
     try {
-      const prompt = `O marceneiro ditou o seguinte áudio na oficina/visita técnica:
-"${transcript}"
-
-Extraia os dados estruturados para orçamento da marcenaria/fabricação digital da WoodBit em JSON:
-{
-  "projectTitle": "título curto do projeto",
-  "roomName": "nome do ambiente",
-  "dimensions": { "width": 0, "height": 0, "depth": 0 },
-  "detectedMaterials": ["material1", "material2"],
-  "cncRequired": boolean,
-  "printing3DRequired": boolean,
-  "estimatedLaborHours": number,
-  "suggestedItems": [
-    { "description": "nome", "quantity": 1, "unit": "un/chapa/hora", "estimatedCost": 100 }
-  ],
-  "confidence": 0.95
-}`;
-
       const response = await ai.models.generateContent({
         model: 'gemini-3.7-flash',
         contents: prompt,
@@ -281,10 +460,14 @@ Extraia os dados estruturados para orçamento da marcenaria/fabricação digital
       });
 
       if (response.text) {
-        quoteData = JSON.parse(response.text);
+        quoteData = {
+          ...quoteData,
+          ...JSON.parse(response.text),
+          processedByModel: 'gemini-3.7-flash (Cloud Fallback)',
+        };
       }
     } catch (err) {
-      console.warn('Voice parse fallback', err);
+      console.warn('[WoodBit ERP] Voice parse fallback', err);
     }
   }
 
@@ -295,10 +478,12 @@ Extraia os dados estruturados para orçamento da marcenaria/fabricação digital
   });
 });
 
-// 4. Vision Analysis with Mandatory Legal Disclaimer
+// 4. Vision Analysis with Mandatory Legal Disclaimer (Local Gemma 4 Vision -> Gemini -> Rule Engine)
 app.post('/api/ai/vision-analysis', async (req, res) => {
   const { imageBase64, mimeType = 'image/jpeg', promptText } = req.body;
   const startTime = Date.now();
+
+  const MANDATORY_DISCLAIMER = 'Estimativa visual — não substitui medição técnica.';
 
   let analysis = {
     identifiedRoom: 'Cozinha / Sala Integrada',
@@ -309,61 +494,111 @@ app.post('/api/ai/vision-analysis', async (req, res) => {
       'Armários aéreos em MDF Louro Freijó com perfil cava',
       'Ilha central com nicho usinado na CNC para garrafas',
     ],
-    legalDisclaimer: 'Estimativa visual — não substitui medição técnica.',
+    legalDisclaimer: MANDATORY_DISCLAIMER,
+    processedByModel: 'WoodBit Local Rule Engine',
   };
 
-  const ai = getGeminiClient();
-  if (ai && imageBase64) {
-    try {
-      const imagePart = {
-        inlineData: {
-          mimeType,
-          data: imageBase64.replace(/^data:image\/\w+;base64,/, ''),
-        },
-      };
+  if (imageBase64) {
+    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const dataUri = `data:${mimeType};base64,${cleanBase64}`;
 
-      const textPart = {
-        text: `${promptText || 'Analise esta foto de ambiente para projeto de marcenaria e fabricação digital na WoodBit.'}
+    // 1. Try LM Studio Local Vision (Gemma 4 12B Vision)
+    const activeLMModel = await getLMStudioActiveModel();
+    const lmVisionPrompt = `${promptText || 'Analise esta foto de ambiente para projeto de marcenaria e fabricação digital na WoodBit (Natividade/RJ).'}
 Identifique:
-1. Tipo de ambiente
-2. Elementos e obstáculos visíveis (tomadas, tubulações, desníveis)
+1. Tipo de cômodo/ambiente
+2. Elementos e obstáculos visíveis (tomadas, hidráulica, shafts, desníveis de piso)
 3. Sugestões de design e materiais em MDF/CNC/3D
-4. Estimativas visuais com ênfase na necessidade de medição presencial.
+4. Estimativas visuais preliminares.
 
-Retorne em formato JSON:
+Retorne APENAS um objeto JSON no formato:
 {
   "identifiedRoom": "string",
   "estimatedDimensionsReference": "string",
   "detectedElements": ["item1", "item2"],
   "suggestedObstacles": ["obstáculo1", "obstáculo2"],
   "designSuggestions": ["sugestão1", "sugestão2"],
-  "legalDisclaimer": "Estimativa visual — não substitui medição técnica."
-}`,
-      };
+  "legalDisclaimer": "${MANDATORY_DISCLAIMER}"
+}`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.7-flash',
-        contents: { parts: [imagePart, textPart] },
-        config: {
-          responseMimeType: 'application/json',
-        },
-      });
+    const lmRes = await callLocalAI(
+      'http://localhost:1234/v1/chat/completions',
+      {
+        model: activeLMModel,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: lmVisionPrompt },
+              { type: 'image_url', image_url: { url: dataUri } },
+            ],
+          },
+        ],
+        max_tokens: 2048,
+        temperature: 0.2,
+      },
+      90000
+    );
 
-      if (response.text) {
+    if (lmRes.success && lmRes.data?.choices?.[0]?.message) {
+      const rawContent = lmRes.data.choices[0].message.content || lmRes.data.choices[0].message.reasoning_content || '';
+      const parsed = extractJsonFromText(rawContent, null);
+      if (parsed) {
         analysis = {
           ...analysis,
-          ...JSON.parse(response.text),
-          legalDisclaimer: 'Estimativa visual — não substitui medição técnica.',
+          ...parsed,
+          legalDisclaimer: MANDATORY_DISCLAIMER,
+          processedByModel: `${activeLMModel} (LM Studio Local Vision)`,
         };
+        return res.json({
+          analysis,
+          latencyMs: Date.now() - startTime,
+          wasLocal: true,
+        });
       }
-    } catch (err) {
-      console.warn('Vision analysis fallback', err);
+    }
+
+    // 2. Fallback to Gemini Cloud
+    const ai = getGeminiClient();
+    if (ai) {
+      try {
+        const imagePart = {
+          inlineData: {
+            mimeType,
+            data: cleanBase64,
+          },
+        };
+
+        const textPart = {
+          text: lmVisionPrompt,
+        };
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.7-flash',
+          contents: { parts: [imagePart, textPart] },
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+
+        if (response.text) {
+          analysis = {
+            ...analysis,
+            ...JSON.parse(response.text),
+            legalDisclaimer: MANDATORY_DISCLAIMER,
+            processedByModel: 'gemini-3.7-flash (Cloud Fallback)',
+          };
+        }
+      } catch (err) {
+        console.warn('[WoodBit ERP] Vision analysis fallback', err);
+      }
     }
   }
 
   res.json({
     analysis,
     latencyMs: Date.now() - startTime,
+    wasLocal: analysis.processedByModel.includes('Local'),
   });
 });
 
