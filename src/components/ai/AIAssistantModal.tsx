@@ -158,8 +158,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
               <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
                 Assistente de Inteligência Artificial WoodBit
               </h3>
-              <span className="text-[10px] text-[var(--color-primary)] font-mono">
-                Ollama / LM Studio (Local-First) • Gemini Cloud Fallback
+              <span className="text-xs text-[var(--color-primary)] font-mono font-medium">
+                LM Studio / Ollama (Local-First) • Gemma 4 12B QAT / Cloud Fallback
               </span>
             </div>
           </div>
@@ -227,7 +227,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                       }`}
                     >
                       <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                      <span className="text-[9px] text-[var(--text-muted)] block text-right mt-1">
+                      <span className="text-xs text-[var(--text-muted)] block text-right mt-1 opacity-80 font-mono">
                         {msg.time}
                       </span>
                     </div>
@@ -270,7 +270,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                   </span>
                   <button
                     onClick={() => setIsRecording(!isRecording)}
-                    className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition flex items-center gap-1 cursor-pointer ${
+                    className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition flex items-center gap-1 cursor-pointer ${
                       isRecording
                         ? 'bg-[#93000a] text-white animate-pulse'
                         : 'bg-[var(--bg-container)] text-[var(--color-primary)] border border-[var(--color-primary)]/30'
@@ -315,22 +315,22 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     {parsedQuoteResult.items?.map((it: any, idx: number) => (
                       <div
                         key={idx}
-                        className="p-2 bg-[var(--bg-container)] rounded-lg border border-[var(--border-subtle)] flex items-center justify-between"
+                        className="p-2.5 bg-[var(--bg-container)] rounded-lg border border-[var(--border-subtle)] flex items-center justify-between"
                       >
                         <div>
                           <span className="font-medium text-[var(--text-main)] block">{it.description}</span>
-                          <span className="text-[10px] text-[var(--text-muted)]">
+                          <span className="text-xs text-[var(--text-muted)]">
                             {it.roomName} • {it.category}
                           </span>
                         </div>
-                        <span className="font-mono text-[var(--color-primary)]">
+                        <span className="font-mono text-[var(--color-primary)] font-bold">
                           R$ {it.totalPrice?.toFixed(2)}
                         </span>
                       </div>
                     ))}
                   </div>
 
-                  <p className="text-[11px] text-[var(--text-muted)] italic">
+                  <p className="text-xs text-[var(--text-muted)] italic">
                     Notas: {parsedQuoteResult.aiReasoning}
                   </p>
                 </div>
@@ -359,8 +359,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     alt="Foto do cômodo"
                     className="rounded-xl border border-[var(--border-subtle)] w-full h-44 object-cover"
                   />
-                  <div className="mt-2 flex justify-between">
-                    <span className="text-[10px] text-[var(--text-muted)]">Foto: Cozinha Casa Silva</span>
+                  <div className="mt-2 flex justify-between items-center">
+                    <span className="text-xs text-[var(--text-muted)] font-medium">Foto: Cozinha Casa Silva</span>
                     <button
                       onClick={handleAnalyzeVision}
                       disabled={isAnalyzingVision}
@@ -381,8 +381,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                     <div className="space-y-2">
                       <p className="text-[var(--text-muted)]">{visionAnalysisResult.generalImpression}</p>
                       <div className="space-y-1">
-                        <span className="text-[10px] text-[var(--text-muted)] block">Possíveis Pontos de Atenção:</span>
-                        <ul className="list-disc list-inside text-[11px] text-[#ffb4ab] space-y-0.5">
+                        <span className="text-xs text-[var(--text-muted)] font-medium block">Possíveis Pontos de Atenção:</span>
+                        <ul className="list-disc list-inside text-xs text-[#ffb4ab] space-y-0.5">
                           {visionAnalysisResult.detectedOutlets?.map((d: string, i: number) => (
                             <li key={i}>{d}</li>
                           ))}

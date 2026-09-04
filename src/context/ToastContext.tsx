@@ -71,7 +71,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
             <div className="flex-1 text-xs">
               <span className="font-bold block text-[#eae1dd]">{toast.title}</span>
-              {toast.message && <p className="text-[11px] text-[#d3c4b6] mt-0.5">{toast.message}</p>}
+              {toast.message && <p className="text-xs text-[#d3c4b6] mt-0.5 leading-relaxed">{toast.message}</p>}
             </div>
 
             <button

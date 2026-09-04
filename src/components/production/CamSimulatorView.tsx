@@ -269,12 +269,12 @@ M30 (Fim de Programa)
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-[var(--color-primary)] font-bold">ARQUIVO: TAMPO_GAMER_RGB.TAP</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-[var(--bg-low)] text-[var(--text-muted)] border border-[var(--border-subtle)]">
+                <span className="text-xs font-mono text-[var(--color-primary)] font-bold">ARQUIVO: TAMPO_GAMER_RGB.TAP</span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[var(--bg-low)] text-[var(--text-muted)] border border-[var(--border-subtle)] font-medium">
                   {MATERIAL_PRESETS.find((m) => m.id === selectedMaterialId)?.name}
                 </span>
               </div>
-              <h3 className="font-display font-bold text-sm text-[var(--text-main)]">
+              <h3 className="font-display font-bold text-sm text-[var(--text-main)] mt-0.5">
                 Visualização Cinemática do Percurso da Fresa
               </h3>
             </div>
@@ -314,14 +314,14 @@ M30 (Fim de Programa)
 
               {/* Pocket Cutout */}
               <div className="w-44 h-24 bg-[#161311] border border-[var(--color-primary)] rounded flex items-center justify-center">
-                <span className="text-[10px] font-mono text-[var(--color-primary)] font-bold">Rebaixo LED (Prof: 8mm)</span>
+                <span className="text-xs font-mono text-[var(--color-primary)] font-bold">Rebaixo LED (Prof: 8mm)</span>
               </div>
 
               {/* Drill Holes */}
-              <div className="absolute top-4 left-4 w-6 h-6 rounded-full bg-[#110d0c] border border-[#ffb4ab] flex items-center justify-center text-[8px] font-mono text-[#ffb4ab] font-bold">
+              <div className="absolute top-4 left-4 w-7 h-7 rounded-full bg-[#110d0c] border border-[#ffb4ab] flex items-center justify-center text-xs font-mono text-[#ffb4ab] font-bold">
                 Ø35
               </div>
-              <div className="absolute top-4 right-4 w-6 h-6 rounded-full bg-[#110d0c] border border-[#ffb4ab] flex items-center justify-center text-[8px] font-mono text-[#ffb4ab] font-bold">
+              <div className="absolute top-4 right-4 w-7 h-7 rounded-full bg-[#110d0c] border border-[#ffb4ab] flex items-center justify-center text-xs font-mono text-[#ffb4ab] font-bold">
                 Ø35
               </div>
               <div className="absolute bottom-4 left-4 w-3.5 h-3.5 rounded-full bg-[#110d0c] border border-[#9cd499]"></div>
@@ -340,7 +340,7 @@ M30 (Fim de Programa)
             </div>
 
             {/* Live G-code Stream Overlay */}
-            <div className="absolute bottom-3 left-3 bg-[var(--bg-container)]/95 backdrop-blur-xs p-2.5 rounded-lg border border-[var(--border-subtle)] text-[10px] font-mono text-[var(--text-muted)] space-y-0.5 shadow-md">
+            <div className="absolute bottom-3 left-3 bg-[var(--bg-container)]/95 backdrop-blur-xs p-2.5 rounded-lg border border-[var(--border-subtle)] text-xs font-mono text-[var(--text-muted)] space-y-0.5 shadow-md">
               <div>G01 X{(progress * 12.4).toFixed(1)} Y{(Math.sin(progress) * 45 + 120).toFixed(1)} Z-6.000 F{feedRate}</div>
               <div className="text-[var(--color-primary)] font-bold">S{spindleRpm} M03 (Spindle CW)</div>
             </div>
@@ -380,7 +380,7 @@ M30 (Fim de Programa)
                   }`}
                 >
                   <span className="block truncate">{mat.name}</span>
-                  <span className="text-[10px] font-mono opacity-70 block">{mat.defaultFeed} mm/min</span>
+                  <span className="text-xs font-mono opacity-80 block">{mat.defaultFeed} mm/min</span>
                 </button>
               ))}
             </div>
@@ -429,7 +429,7 @@ M30 (Fim de Programa)
               <Gauge className="w-4 h-4 text-[var(--color-primary)]" />
               Horímetro & Desgaste de Fresas
             </h3>
-            <span className="text-[10px] font-mono text-[var(--text-muted)]">
+            <span className="text-xs font-mono text-[var(--text-muted)]">
               {toolInventory.length} Ferramentas
             </span>
           </div>
@@ -443,7 +443,7 @@ M30 (Fim de Programa)
                 <div
                   key={tool.id}
                   onClick={() => setSelectedToolId(tool.id)}
-                  className={`p-3 rounded-lg border text-xs space-y-2 cursor-pointer transition ${
+                  className={`p-3.5 rounded-lg border text-xs space-y-2 cursor-pointer transition ${
                     isSelected
                       ? 'bg-[var(--bg-high)] border-[var(--color-primary)] beveled-card shadow-sm'
                       : 'bg-[var(--bg-low)]/50 border-[var(--border-subtle)] hover:border-[var(--color-primary)]/40'
@@ -452,13 +452,13 @@ M30 (Fim de Programa)
                   <div className="flex items-start justify-between">
                     <div>
                       <span className="font-bold text-[var(--text-main)] block leading-tight">{tool.name}</span>
-                      <span className="text-[10px] font-mono text-[var(--text-muted)]">
+                      <span className="text-xs font-mono text-[var(--text-muted)] mt-0.5 block">
                         Ø {tool.diameter} • {tool.flutes > 0 ? `${tool.flutes} cortes` : 'Extrusão 3D'} • Última afiação: {tool.lastSharpened}
                       </span>
                     </div>
 
                     <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
+                      className={`text-xs px-2 py-0.5 rounded font-mono font-bold uppercase ${
                         tool.status === 'good'
                           ? 'bg-[#1d5123]/40 text-[#9cd499] border border-[#9cd499]/30'
                           : 'bg-[#644316]/40 text-[var(--color-primary)] border border-[var(--color-primary)]/30'
@@ -470,7 +470,7 @@ M30 (Fim de Programa)
 
                   {/* Wear Progress */}
                   <div className="space-y-1">
-                    <div className="flex items-center justify-between text-[10px]">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-[var(--text-muted)]">Vida Útil Restante</span>
                       <span className="font-mono text-[var(--color-primary)] font-bold">{lifePercent}% ({tool.maxHours - tool.currentHours}h)</span>
                     </div>
@@ -494,7 +494,7 @@ M30 (Fim de Programa)
               <Wrench className="w-3.5 h-3.5 text-[var(--color-primary)]" />
               Registro de Manutenção Preventiva
             </span>
-            <p className="text-[11px] text-[var(--text-muted)]">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed">
               Registrar afiação ou substituição de ferramenta para zerar o ciclo de horímetro.
             </p>
             <button

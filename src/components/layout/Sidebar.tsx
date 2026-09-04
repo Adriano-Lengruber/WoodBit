@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span className="font-display font-black text-lg tracking-tight text-[var(--text-main)]">
                   Wood<span className="text-[var(--color-primary)]">Bit</span>
                 </span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-mono font-bold border border-[var(--color-primary)]/30">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-primary-container)] text-[var(--color-primary)] font-mono font-bold border border-[var(--color-primary)]/30">
                   STUDIO
                 </span>
               </div>
@@ -205,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="bg-[var(--bg-low)] p-2.5 rounded-xl border border-[var(--border-subtle)] space-y-1.5">
           <div className="flex items-center justify-between text-xs text-[var(--text-muted)] font-medium">
             <span>Perfil Operacional:</span>
-            <span className="font-bold uppercase text-[var(--color-primary)] font-mono text-[11px]">
+            <span className="font-bold uppercase text-[var(--color-primary)] font-mono text-xs">
               {userRole}
             </span>
           </div>
