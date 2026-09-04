@@ -194,7 +194,13 @@ function AppContent() {
   if (activeView === 'landing') {
     return (
       <div className={`min-h-screen bg-[#141313] text-[#EFEFEF] ${isDarkMode ? '' : 'light'}`}>
-        <LandingPageView onEnterApp={() => setActiveView('dashboard')} />
+        <LandingPageView
+          onEnterApp={() => setActiveView('dashboard')}
+          onLoginSuccess={(role) => {
+            setUserRole(role);
+            setActiveView('dashboard');
+          }}
+        />
       </div>
     );
   }
