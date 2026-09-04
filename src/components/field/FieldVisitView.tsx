@@ -13,7 +13,9 @@ import {
   Plus,
   Trash2,
   Image as ImageIcon,
-  Download
+  Download,
+  Zap,
+  Check
 } from 'lucide-react';
 import { Project } from '../../types';
 import { useToast } from '../../context/ToastContext';
@@ -53,13 +55,13 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
   const [gasVerified, setGasVerified] = useState(true);
   const [acessoElevadorVerified, setAcessoElevadorVerified] = useState(true);
   const [obsText, setObsText] = useState(
-    'Ponto de tomada 220V do forno localizado a 1150mm do piso. Prumo da parede da pia com desvio de 3mm corrigido no recuo do módulo.'
+    'Ponto de tomada 220V do forno localizado a 1150mm do piso acabado. Prumo da parede da pia com desvio de 3mm corrigido no recuo compensador do módulo.'
   );
   const [photos, setPhotos] = useState<string[]>([
-    'Parede Pia - Prumo Laser',
+    'Parede da Pia — Prumo Laser Alinhado',
     'Ponto 220V Forno Embutido',
     'Sanca de Gesso & Pé-Direito 2650mm',
-    'Acesso Elevador / Escada',
+    'Acesso Elevador de Carga / Escada',
   ]);
   const [newPhotoLabel, setNewPhotoLabel] = useState('');
   const [validationSuccess, setValidationSuccess] = useState(false);
@@ -129,18 +131,19 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
     laudo += `Data da Visita: ${new Date().toLocaleDateString('pt-BR')}\n`;
     laudo += `Responsável: Técnico Especialista WoodBit (Polo ${selectedProject.city})\n`;
     laudo += `=====================================================\n\n`;
-    laudo += `CHECKLIST ESTRUTURAL & INSTALAÇÕES:\n`;
-    laudo += `1. Desaprumo e Esquadro: ${prumoVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
-    laudo += `2. Pé-Direito Mínimo: ${peDireitoVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
-    laudo += `3. Pontos Elétricos (110V/220V): ${tomadasVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
-    laudo += `4. Hidráulica & Gás: ${hidraulicaVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n`;
-    laudo += `5. Logística de Acesso: ${acessoElevadorVerified ? 'CONFERIDO / OK' : 'PENDENTE'}\n\n`;
-    laudo += `REGISTROS FOTOGRÁFICOS (${photos.length} fotos):\n`;
-    photos.forEach((ph, i) => {
-      laudo += `  - Foto #${i + 1}: ${ph}\n`;
+    laudo += `PONTOS DE CONTROLE CONFERIDOS:\n`;
+    laudo += `[${prumoVerified ? 'X' : ' '}] 1. Desaprumo e Esquadro de Paredes (Laser)\n`;
+    laudo += `[${peDireitoVerified ? 'X' : ' '}] 2. Pé-Direito Mínimo e Sancas\n`;
+    laudo += `[${tomadasVerified ? 'X' : ' '}] 3. Pontos Elétricos & Tensão (110V/220V)\n`;
+    laudo += `[${hidraulicaVerified ? 'X' : ' '}] 4. Hidráulica, Ralos & Ponto de Gás\n`;
+    laudo += `[${acessoElevadorVerified ? 'X' : ' '}] 5. Logística de Acesso ao Imóvel (Elevador/Escada)\n`;
+    laudo += `[X] 6. Registro Fotográfico (${photos.length} fotos anexadas)\n\n`;
+    laudo += `FOTOS REGISTRADAS:\n`;
+    photos.forEach((f, i) => {
+      laudo += `  - Foto #${i + 1}: ${f}\n`;
     });
-    laudo += `\nOBSERVAÇÕES DO MEDIDOR:\n${obsText}\n\n`;
-    laudo += `STATUS: LIBERADO PARA CORTE CNC E MARCENARIA\n`;
+    laudo += `\nOBSERVAÇÕES TÉCNICAS:\n${obsText}\n\n`;
+    laudo += `TERMO DE LIBERAÇÃO:\nMedidas conferidas no local com instrumentos aferidos. Liberado para corte CNC e montagem.\n`;
 
     const blob = new Blob([laudo], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -152,30 +155,78 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast('Laudo Técnico Exportado!', 'Arquivo gerado para arquivo físico ou envio ao cliente.', 'success');
+    showToast('Laudo Técnico Exportado!', 'Arquivo gerado para arquivamento ou envio ao cliente.', 'success');
   };
 
+  const checklistItems = [
+    {
+      id: 'prumo',
+      label: '1. Desaprumo e Esquadro de Paredes',
+      desc: 'Conferido com esquadro e nível a laser rotativo nos 4 cantos do cômodo.',
+      checked: prumoVerified,
+      toggle: () => setPrumoVerified(!prumoVerified),
+    },
+    {
+      id: 'peDireito',
+      label: '2. Pé-Direito Mínimo & Sancas de Gesso',
+      desc: 'Verificada altura do piso acabado até o rebaixo de gesso / laje.',
+      checked: peDireitoVerified,
+      toggle: () => setPeDireitoVerified(!peDireitoVerified),
+    },
+    {
+      id: 'tomadas',
+      label: '3. Pontos Elétricos & Tensão (110V/220V)',
+      desc: 'Marcadas posições exatas de tomadas para fornos, micro-ondas e fitas LED.',
+      checked: tomadasVerified,
+      toggle: () => setTomadasVerified(!tomadasVerified),
+    },
+    {
+      id: 'hidraulica',
+      label: '4. Hidráulica, Ralos & Ponto de Gás',
+      desc: 'Conferida altura do esgoto da pia, saída de filtro e botijão ou gás encanado.',
+      checked: hidraulicaVerified,
+      toggle: () => setHidraulicaVerified(!hidraulicaVerified),
+    },
+    {
+      id: 'acesso',
+      label: '5. Logística de Acesso ao Imóvel',
+      desc: 'Elevador comporta chapas 2750×1850mm? Vão de escadas permite içamento seguro?',
+      checked: acessoElevadorVerified,
+      toggle: () => setAcessoElevadorVerified(!acessoElevadorVerified),
+    },
+    {
+      id: 'fotos',
+      label: '6. Registro Fotográfico em Nuvem',
+      desc: `${photos.length} registros anexados ao pacote técnico de fabricação.`,
+      checked: photos.length > 0,
+      toggle: () => {},
+      isStatic: true,
+    },
+  ];
+
   return (
-    <div id="field-visit-view-container" className="space-y-6 max-w-4xl mx-auto">
+    <div id="field-visit-view-container" className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-4 rounded-xl beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <ClipboardCheck className="w-5 h-5 text-[var(--color-primary)]" />
-            <h2 className="font-display font-bold text-base text-[var(--text-main)]">
+      <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] p-5 rounded-2xl beveled-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--bg-low)] flex items-center justify-center text-[var(--color-primary)] border border-[var(--border-subtle)] shadow-xs">
+            <ClipboardCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="font-display font-bold text-lg text-[var(--text-main)] flex items-center gap-2">
               Visita Técnica Presencial & Pacote de Medição
             </h2>
+            <p className="text-xs text-[var(--text-muted)] font-medium">
+              Conferência in loco com trena e esquadro a laser — Pré-requisito para liberação do corte CNC.
+            </p>
           </div>
-          <p className="text-xs text-[var(--text-muted)]">
-            Checklist de conferência in loco e esquadro a laser obrigatório para liberação de corte CNC.
-          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <select
             value={selectedProject?.id || ''}
             onChange={(e) => setSelectedProjectId(e.target.value)}
-            className="bg-[var(--bg-low)] border border-[var(--border-subtle)] text-xs text-[var(--text-main)] rounded-lg px-3 py-1.5 focus:outline-none focus:border-[var(--color-primary)] cursor-pointer"
+            className="bg-[var(--bg-low)] border border-[var(--border-subtle)] text-xs text-[var(--text-main)] rounded-xl px-3.5 py-2 focus:outline-none focus:border-[var(--color-primary)] cursor-pointer font-medium"
           >
             {availableProjects.map((p) => (
               <option key={p.id} value={p.id}>
@@ -186,13 +237,13 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
         </div>
       </div>
 
-      {/* City Filter Notice */}
+      {/* Regional Filter Banner */}
       {selectedCity !== 'all' && (
-        <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-3 px-4 flex items-center justify-between gap-3 beveled-card shadow-xs text-xs">
-          <div className="flex items-center gap-2">
+        <div className="bg-[var(--bg-container)] border border-[var(--color-primary)]/40 rounded-xl p-3.5 px-4 flex items-center justify-between gap-3 beveled-card shadow-xs text-xs">
+          <div className="flex items-center gap-2.5">
             <MapPin className="w-4 h-4 text-[var(--color-primary)]" />
-            <span className="text-[var(--text-main)]">
-              Filtrando visitas no polo: <strong className="text-[var(--color-primary)]">{selectedCity} - RJ</strong>
+            <span className="text-[var(--text-main)] font-medium">
+              Filtrando visitas no polo: <strong className="text-[var(--color-primary)] font-bold">{selectedCity} - RJ</strong>
             </span>
           </div>
           {onSelectCity && (
@@ -207,27 +258,30 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
       )}
 
       {selectedProject && (
-        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-xl p-6 beveled-card space-y-6">
+        <div className="bg-[var(--bg-container)] border border-[var(--border-subtle)] rounded-2xl p-6 beveled-card shadow-md space-y-6">
           {/* Project Summary Info */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[var(--border-subtle)] gap-3">
-            <div>
-              <span className="text-xs font-mono text-[var(--color-primary)] font-bold">
-                {selectedProject.code} (v{selectedProject.version})
-              </span>
-              <h3 className="font-display font-bold text-base text-[var(--text-main)]">
-                {selectedProject.title}
-              </h3>
-              <p className="text-xs text-[var(--text-muted)] mt-0.5 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                Cliente: {selectedProject.customerName} • {selectedProject.address}, {selectedProject.city} - RJ
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[var(--border-subtle)] gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs font-mono text-[var(--color-primary)] font-bold bg-[var(--bg-lowest)] px-2.5 py-0.5 rounded-md border border-[var(--border-subtle)]">
+                  {selectedProject.code} (v{selectedProject.version})
+                </span>
+                <h3 className="font-display font-bold text-lg text-[var(--text-main)]">
+                  {selectedProject.title}
+                </h3>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] font-medium flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                Cliente: <strong className="text-slate-200">{selectedProject.customerName}</strong> •{' '}
+                {selectedProject.address}, {selectedProject.city} - RJ
               </p>
             </div>
 
             <span
-              className={`text-xs px-3 py-1 rounded-full font-bold uppercase ${
+              className={`text-xs px-3.5 py-1.5 rounded-full font-bold uppercase tracking-wider ${
                 selectedProject.technicalVisit?.isValidated
-                  ? 'bg-[var(--color-secondary-container)] text-[var(--color-secondary)] border border-[var(--color-secondary)]/40'
-                  : 'bg-[#93000a]/20 text-[#ffb4ab] border border-[#ffb4ab]/40'
+                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
+                  : 'bg-rose-950/80 text-rose-300 border border-rose-500/40'
               }`}
             >
               {selectedProject.technicalVisit?.isValidated
@@ -236,198 +290,137 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
             </span>
           </div>
 
-          {/* Checklist Form */}
-          <div className="space-y-4">
+          {/* Checklist Form: Touch-Friendly Toggle Cards */}
+          <div className="space-y-3.5">
             <h4 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-2">
               <Ruler className="w-4 h-4 text-[var(--color-primary)]" />
               Checklist Estrutural & Instalações (6 Pontos de Controle)
             </h4>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    1. Desaprumo e Esquadro de Paredes
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    Conferido com esquadro a laser nos 4 cantos
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={prumoVerified}
-                  onChange={(e) => setPrumoVerified(e.target.checked)}
-                  className="accent-[var(--color-primary)] w-4 h-4 cursor-pointer"
-                />
-              </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {checklistItems.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={item.toggle}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                    item.checked
+                      ? 'bg-gradient-to-r from-emerald-950/30 to-[var(--bg-low)] border-emerald-500/40 shadow-xs'
+                      : 'bg-[var(--bg-low)] border-[var(--border-subtle)] hover:border-[var(--color-primary)]/40'
+                  }`}
+                >
+                  <div className="space-y-1 pr-2">
+                    <span className="font-bold text-sm text-[var(--text-main)] block leading-snug">
+                      {item.label}
+                    </span>
+                    <span className="text-xs text-slate-400 block leading-relaxed font-medium">
+                      {item.desc}
+                    </span>
+                  </div>
 
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    2. Pé-Direito Mínimo e Sancas
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    Verificado altura do piso ao teto / gesso
-                  </span>
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs transition-all ${
+                      item.checked
+                        ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                        : 'bg-slate-800 border border-slate-700 text-transparent'
+                    }`}
+                  >
+                    ✓
+                  </div>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={peDireitoVerified}
-                  onChange={(e) => setPeDireitoVerified(e.target.checked)}
-                  className="accent-[var(--color-primary)] w-4 h-4 cursor-pointer"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    3. Pontos Elétricos & Tensão (110V/220V)
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    Marcadas posições de tomadas de fornos e cooktop
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={tomadasVerified}
-                  onChange={(e) => setTomadasVerified(e.target.checked)}
-                  className="accent-[var(--color-primary)] w-4 h-4 cursor-pointer"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    4. Hidráulica, Ralos & Ponto de Gás
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    Conferida altura do esgoto da pia e botijão/gás canalizado
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={hidraulicaVerified}
-                  onChange={(e) => setHidraulicaVerified(e.target.checked)}
-                  className="accent-[var(--color-primary)] w-4 h-4 cursor-pointer"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    5. Logística de Acesso ao Imóvel
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    Elevador comporta chapas 2750x1830mm? Escadas estreitas?
-                  </span>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={acessoElevadorVerified}
-                  onChange={(e) => setAcessoElevadorVerified(e.target.checked)}
-                  className="accent-[var(--color-primary)] w-4 h-4 cursor-pointer"
-                />
-              </label>
-
-              <label className="flex items-center justify-between p-3 rounded-lg bg-[var(--bg-low)] border border-[var(--border-subtle)] cursor-pointer hover:border-[var(--color-primary)]/40 transition">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-[var(--text-main)] block">
-                    6. Registro Fotográfico em Nuvem
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)]">
-                    {photos.length} fotos anexadas ao pacote
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-[var(--color-primary)] font-mono font-bold">
-                  <Camera className="w-4 h-4" /> {photos.length} fotos
-                </div>
-              </label>
+              ))}
             </div>
           </div>
 
           {/* Photo Gallery & Upload */}
-          <div className="space-y-3">
-            <h4 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-2">
-              <Camera className="w-4 h-4 text-[var(--color-primary)]" />
-              Galeria de Registros Fotográficos da Obra
-            </h4>
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between">
+              <h4 className="font-display font-bold text-xs uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-2">
+                <Camera className="w-4 h-4 text-[var(--color-primary)]" />
+                Galeria de Registros Fotográficos da Obra ({photos.length})
+              </h4>
+              <span className="text-xs text-slate-400 font-mono">Resolução alta / Nuvem WoodBit</span>
+            </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {photos.map((photo, idx) => (
                 <div
                   key={idx}
-                  className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs flex flex-col justify-between group relative hover:border-[var(--color-primary)]/50 transition"
+                  className="bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl p-3 text-xs flex flex-col justify-between group hover:border-[var(--color-primary)]/50 transition-all shadow-xs"
                 >
-                  <div className="flex items-center gap-1.5 text-[var(--color-primary)] mb-1">
-                    <ImageIcon className="w-3.5 h-3.5" />
-                    <span className="font-mono text-[10px]">Foto #{idx + 1}</span>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-amber-400 mb-1.5">
+                      <ImageIcon className="w-4 h-4" />
+                      <span className="font-mono text-xs font-bold">Foto #{idx + 1}</span>
+                    </div>
+                    <span className="text-xs text-slate-200 font-medium leading-relaxed block">
+                      {photo}
+                    </span>
                   </div>
-                  <span className="text-[11px] text-[var(--text-main)] font-medium leading-tight">
-                    {photo}
-                  </span>
+
                   <button
                     onClick={() => handleRemovePhoto(idx)}
-                    className="mt-2 text-[10px] text-[#ffb4ab] hover:underline flex items-center gap-1 opacity-80 hover:opacity-100 cursor-pointer"
+                    className="mt-3 text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer font-semibold opacity-80 hover:opacity-100 transition"
                   >
-                    <Trash2 className="w-3 h-3" /> Remover
+                    <Trash2 className="w-3.5 h-3.5" /> Remover
                   </button>
                 </div>
               ))}
             </div>
 
-            {/* Add Photo input */}
-            <div className="flex items-center gap-2 pt-1">
+            {/* Add Photo Input */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
               <input
                 type="text"
                 placeholder="Nome/legenda da nova foto (Ex: Prumo do nicho da geladeira)..."
                 value={newPhotoLabel}
                 onChange={(e) => setNewPhotoLabel(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddPhoto()}
-                className="flex-1 bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+                className="w-full sm:flex-1 bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
               />
               <button
                 onClick={handleAddPhoto}
-                className="px-3 py-1.5 rounded-lg bg-[var(--bg-high)] hover:bg-[var(--bg-surface)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[var(--bg-high)] hover:bg-[var(--color-primary)] text-slate-200 hover:text-slate-950 border border-[var(--border-subtle)] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-xs"
               >
-                <Plus className="w-3.5 h-3.5" /> Anexar Registro
+                <Plus className="w-4 h-4" /> Anexar Foto
               </button>
             </div>
           </div>
 
-          {/* Observations */}
-          <div>
-            <label className="text-[11px] text-[var(--text-muted)] block mb-1 font-semibold">
+          {/* Technical Observations */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-slate-300 block uppercase tracking-wider">
               Observações Técnicas do Medidor & Restrições Construtivas
             </label>
             <textarea
               rows={3}
               value={obsText}
               onChange={(e) => setObsText(e.target.value)}
-              className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)]"
+              className="w-full bg-[var(--bg-low)] border border-[var(--border-subtle)] rounded-xl p-3 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--color-primary)] leading-relaxed"
             />
           </div>
 
-          {/* Validation Sign-off button */}
-          <div className="p-4 rounded-xl bg-[var(--bg-low)] border border-[var(--color-primary)]/30 space-y-3 debossed">
-            <div className="flex items-center gap-2 text-xs text-[var(--text-main)]">
-              <ShieldCheck className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-              <span>
-                Termo de Responsabilidade Técnica: Declaro que as medidas foram conferidas com trena e esquadro a laser no local e autorizo a liberação das OPs de corte CNC e marcenaria.
+          {/* Validation Sign-off Box */}
+          <div className="p-5 rounded-2xl bg-gradient-to-br from-[var(--bg-low)] to-[var(--bg-container)] border border-[var(--color-primary)]/40 space-y-4 debossed shadow-sm">
+            <div className="flex items-start gap-3 text-xs text-slate-300">
+              <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+              <span className="leading-relaxed font-medium">
+                <strong>Termo de Responsabilidade Técnica:</strong> Declaro que as medidas foram conferidas com trena e esquadro a laser no local e autorizo formalmente a liberação das OPs de usinagem CNC e marcenaria.
               </span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
               <button
                 onClick={handleExportLaudo}
-                className="px-4 py-2.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--bg-high)] text-[var(--text-main)] border border-[var(--border-subtle)] text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-4 py-2.5 rounded-xl bg-[var(--bg-high)] hover:bg-[var(--bg-low)] text-slate-200 border border-[var(--border-subtle)] text-xs font-bold flex items-center gap-2 cursor-pointer shadow-xs transition"
               >
-                <Download className="w-4 h-4 text-[var(--color-primary)]" />
-                Exportar Laudo (.txt)
+                <Download className="w-4 h-4 text-amber-400" />
+                Exportar Laudo Técnico (.txt)
               </button>
+
               <button
                 id="btn-validate-measurement-package"
                 onClick={handleValidatePackage}
-                className="convex-btn px-5 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shadow-lg"
+                className="convex-btn px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-md"
               >
                 <FileCheck className="w-4 h-4" />
                 Validar e Liberar para Produção
@@ -436,8 +429,8 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
           </div>
 
           {validationSuccess && (
-            <div className="p-3 rounded-lg bg-[var(--color-secondary-container)] border border-[var(--color-secondary)] text-[var(--color-secondary)] text-xs font-medium flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <div className="p-4 rounded-xl bg-emerald-950/80 border border-emerald-500 text-emerald-200 text-xs font-bold flex items-center gap-2.5 animate-in fade-in shadow-md">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
               Pacote de medição validado com sucesso! O projeto foi promovido para "Em Produção".
             </div>
           )}
@@ -446,4 +439,3 @@ export const FieldVisitView: React.FC<FieldVisitViewProps> = ({
     </div>
   );
 };
-
